@@ -1,3 +1,5 @@
+import java.awt.*;
+
 public class Bomb extends Thread{
 
     volatile int currentX,currentY;
@@ -20,6 +22,11 @@ public class Bomb extends Thread{
                 throw new RuntimeException(e);
             }
         }
+    }
+
+
+    public void drawSprite(Graphics2D g2d) {
+        g2d.fillOval(currentX,currentY,10,10);
     }
 
     synchronized void  move() {

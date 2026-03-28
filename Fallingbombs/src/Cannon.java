@@ -1,3 +1,5 @@
+import java.awt.*;
+
 public class Cannon {
 
     int currentX,currentY;
@@ -11,7 +13,12 @@ public class Cannon {
     }
 
 
+    public void drawSprite(Graphics2D g2d) {
+        g2d.fillRect(currentX,currentY,w,h);
+    }
+
     public Bomb fire() {
+        System.out.println("Fired");
         return new Bomb(currentX,currentY);
     }
 }

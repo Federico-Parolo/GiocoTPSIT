@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ public class GamePanel extends JPanel {
 
     int difficulty = 1;
     int currentPoints = 1;
+    int bombPoints = 10;
     Cannon c;
     Timer refresh;
     Timer spawnBomb;
@@ -24,22 +26,22 @@ public class GamePanel extends JPanel {
         setLayout(null);
         setSize(width,height);
         c = new Cannon(width/2,baseY);
-
+        bombPoints = bombPoints * difficulty;
         bombs = Collections.synchronizedList(new ArrayList<>());
-        addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
+        addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                int keyCode = e.getKeyCode();
 
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
+                if (keyCode == KeyEvent.VK_KP_LEFT) {
+                    c.currentX -= 1;
+                } else if (keyCode == KeyEvent.VK_RIGHT) {
+                    c.currentX += 1;
+                } else if (keyCode == KeyEvent.VK_SPACE) {
+                    c.fire();
+                } else {
+                    System.out.println("Other key pressed: " + keyCode);
+                }
             }
         });
 
@@ -47,6 +49,9 @@ public class GamePanel extends JPanel {
         refresh = new Timer(30, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int l = bombs.size();
+                bombs.removeIf(obj -> obj.currentY > baseY);
+                currentPoints += (l - bombs.size()) * bombPoints;
                 repaint();
             }
         });
@@ -86,15 +91,10 @@ public class GamePanel extends JPanel {
         // drawings every spawned bomb
         synchronized (bombs) {
             for (Bomb b : bombs) {
-                if (b.currentY > baseY) {
-                    bombs.remove(b);
-
-                } else {
-                    g2d.fillOval(b.currentX,b.currentY,10,10);
-                }
+                 b.drawSprite(g2d);
             }
         }
-
-        g2d.fillRect(c.currentX,c.currentY,c.w,c.h);
+        c.drawSprite(g2d);
+        //g2d.fillRect(c.currentX,c.currentY,c.w,c.h);
     }
 }
