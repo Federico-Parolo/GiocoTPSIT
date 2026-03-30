@@ -4,8 +4,8 @@ import java.awt.*;
 public class Main {
 
     public static void main(String[] args) {
-        int w = 300;
-        int h = 600;
+        int w = 400;
+        int h = 700;
 
 
         JFrame window = new JFrame("Falling Bombs");
@@ -13,14 +13,14 @@ public class Main {
         window.setSize(new Dimension(w,h));
         window.setLocationRelativeTo(null);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setResizable(false);
-
 
         GamePanel p = new GamePanel(w,h);
         window.add(p);
 
+        window.addKeyListener(p);
 
         window.setVisible(true);
+        p.repaint();
     }
 
 }

@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-public class GamePanel extends JPanel {
+public class GamePanel extends JPanel implements KeyListener {
 
     int difficulty = 1;
-    int currentPoints = 1;
+    int currentPoints = 0;
     int bombPoints = 10;
     Cannon c;
+    LobbyPanel lP;
     Timer refresh;
     Timer spawnBomb;
     final java.util.List<Bomb> bombs;
@@ -28,22 +29,6 @@ public class GamePanel extends JPanel {
         c = new Cannon(width/2,baseY);
         bombPoints = bombPoints * difficulty;
         bombs = Collections.synchronizedList(new ArrayList<>());
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-
-                if (keyCode == KeyEvent.VK_KP_LEFT) {
-                    c.currentX -= 1;
-                } else if (keyCode == KeyEvent.VK_RIGHT) {
-                    c.currentX += 1;
-                } else if (keyCode == KeyEvent.VK_SPACE) {
-                    c.fire();
-                } else {
-                    System.out.println("Other key pressed: " + keyCode);
-                }
-            }
-        });
 
 
         refresh = new Timer(30, new AbstractAction() {
@@ -52,6 +37,9 @@ public class GamePanel extends JPanel {
                 int l = bombs.size();
                 bombs.removeIf(obj -> obj.currentY > baseY);
                 currentPoints += (l - bombs.size()) * bombPoints;
+                if (l-bombs.size() != 0) {
+                    resetGame();
+                }
                 repaint();
             }
         });
@@ -67,8 +55,18 @@ public class GamePanel extends JPanel {
             }
         });
 
-        spawnBomb.start();
-        refresh.start();
+        lP = new LobbyPanel(width,height);
+        add(lP);
+
+        lP.startButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                spawnBomb.start();
+                refresh.start();
+                lP.setVisible(false);
+            }
+        });
+        repaint();
     }
 
 
@@ -84,7 +82,7 @@ public class GamePanel extends JPanel {
         g2d.fillRect(0,500,getWidth(),getHeight());
 
         g2d.setColor(new Color(0,0,0));
-        g2d.setFont(new Font(Font.MONOSPACED,Font.PLAIN,15));
+        g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,18));
         g2d.drawString("Points: " + currentPoints,5,20);
 
 
@@ -96,5 +94,40 @@ public class GamePanel extends JPanel {
         }
         c.drawSprite(g2d);
         //g2d.fillRect(c.currentX,c.currentY,c.w,c.h);
+    }
+
+
+    public void resetGame() {
+        spawnBomb.stop();
+        refresh.stop();
+
+        lP.setVisible(true);
+        currentPoints = 0;
+        bombs.clear();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        System.out.println("key");
+        if (keyCode == KeyEvent.VK_KP_LEFT) {
+            c.currentX -= 1;
+        } else if (keyCode == KeyEvent.VK_RIGHT) {
+            c.currentX += 1;
+        } else if (keyCode == KeyEvent.VK_SPACE) {
+            c.fire();
+        } else {
+            System.out.println("Other key pressed: " + keyCode);
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 }

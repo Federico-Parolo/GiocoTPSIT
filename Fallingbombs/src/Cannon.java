@@ -14,7 +14,7 @@ public class Cannon {
 
 
     public void drawSprite(Graphics2D g2d) {
-        g2d.fillRect(currentX,currentY,w,h);
+        g2d.fillRect(currentX,currentY-h/2,w,h);
     }
 
     public Bomb fire() {
