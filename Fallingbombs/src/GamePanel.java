@@ -1,35 +1,34 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-public class GamePanel extends JPanel implements KeyListener {
+public class GamePanel extends JPanel{
 
     int difficulty = 1;
     int currentPoints = 0;
     int bombPoints = 10;
     Cannon c;
-    LobbyPanel lP;
     Timer refresh;
     Timer spawnBomb;
+    Timer deleteProjectile;
     final java.util.List<Bomb> bombs;
+    final java.util.List<Projectile> projectiles;
     Random r = new Random();
     int baseY = 500;
+    private volatile boolean gameRunning = false;
 
 
-    public GamePanel(int width,int height) {
+    public GamePanel(int w,int h) {
         super();
         setLayout(null);
-        setSize(width,height);
-        c = new Cannon(width/2,baseY);
+        setSize(w,h);
+        c = new Cannon(w/2,baseY);
         bombPoints = bombPoints * difficulty;
         bombs = Collections.synchronizedList(new ArrayList<>());
-
+        projectiles = Collections.synchronizedList(new ArrayList<>());
 
         refresh = new Timer(30, new AbstractAction() {
             @Override
@@ -39,6 +38,7 @@ public class GamePanel extends JPanel implements KeyListener {
                 currentPoints += (l - bombs.size()) * bombPoints;
                 if (l-bombs.size() != 0) {
                     resetGame();
+
                 }
                 repaint();
             }
@@ -48,22 +48,19 @@ public class GamePanel extends JPanel implements KeyListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 synchronized (bombs) {
-                    Bomb b = new Bomb(r.nextInt(0,width),r.nextInt(-100,100));
+                    Bomb b = new Bomb(r.nextInt(0,w),r.nextInt(-100,100));
                     bombs.add(b);
                     b.start();
                 }
             }
         });
 
-        lP = new LobbyPanel(width,height);
-        add(lP);
-
-        lP.startButton.addActionListener(new AbstractAction() {
+        deleteProjectile = new Timer(1000, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                spawnBomb.start();
-                refresh.start();
-                lP.setVisible(false);
+                synchronized (projectiles) {
+                    projectiles.removeIf(obj -> obj.currentY < 0);
+                }
             }
         });
         repaint();
@@ -86,14 +83,22 @@ public class GamePanel extends JPanel implements KeyListener {
         g2d.drawString("Points: " + currentPoints,5,20);
 
 
-        // drawings every spawned bomb
+        // drawing every spawned bomb
         synchronized (bombs) {
             for (Bomb b : bombs) {
                  b.drawSprite(g2d);
             }
         }
+
+        //drawing every projectile fired
+        synchronized (projectiles) {
+            for (Projectile p : projectiles) {
+                p.drawSprite(g2d);
+            }
+        }
+
         c.drawSprite(g2d);
-        //g2d.fillRect(c.currentX,c.currentY,c.w,c.h);
+
     }
 
 
@@ -101,33 +106,35 @@ public class GamePanel extends JPanel implements KeyListener {
         spawnBomb.stop();
         refresh.stop();
 
-        lP.setVisible(true);
         currentPoints = 0;
         bombs.clear();
+        changeGameState(false);
     }
 
-    @Override
-    public void keyTyped(KeyEvent e) {
-
+    public void startNewGame() {
+        currentPoints = 0;
+        bombs.clear();
+        spawnBomb.start();
+        refresh.start();
+        changeGameState(true);
     }
 
-    @Override
-    public void keyPressed(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-        System.out.println("key");
-        if (keyCode == KeyEvent.VK_KP_LEFT) {
-            c.currentX -= 1;
-        } else if (keyCode == KeyEvent.VK_RIGHT) {
-            c.currentX += 1;
-        } else if (keyCode == KeyEvent.VK_SPACE) {
-            c.fire();
-        } else {
-            System.out.println("Other key pressed: " + keyCode);
+    public boolean getGameRunning() {
+        return gameRunning;
+    }
+
+    public void changeGameState(boolean newState) {
+        boolean oldState = gameRunning;
+        gameRunning = newState;
+
+        firePropertyChange("gameRunning",oldState,gameRunning);
+    }
+
+
+    public void spawnProjectile(Projectile p) {
+        synchronized (projectiles) {
+            projectiles.add(p);
+            p.start();
         }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-
     }
 }

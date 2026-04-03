@@ -17,8 +17,8 @@ public class Cannon {
         g2d.fillRect(currentX,currentY-h/2,w,h);
     }
 
-    public Bomb fire() {
+    public Projectile fire() {
         System.out.println("Fired");
-        return new Bomb(currentX,currentY);
+        return new Projectile(currentX + w/2,currentY);
     }
 }
