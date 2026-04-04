@@ -1,11 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.security.Key;
 
 public class GameFrame extends JFrame {
 
@@ -41,6 +38,9 @@ public class GameFrame extends JFrame {
             public void propertyChange(PropertyChangeEvent evt) {
                 System.out.println("Game running: " + evt.getNewValue());
                 if(!evt.getNewValue().equals(true)) {
+                    gameOverPanel.setScoreLabel(gamePanel.currentPoints);
+                    if (lobbyPanel.currentHighScore < gamePanel.currentPoints) lobbyPanel.currentHighScore = gamePanel.currentPoints;
+                    lobbyPanel.updateUI();
                     cardLayout.show(container, END);
                 }
 
@@ -79,7 +79,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (gamePanel.getGameRunning()) {
-                    gamePanel.c.currentX -= 5;
+                    gamePanel.c.currentX -= (gamePanel.c.currentX <= 0) ? 0 : getWidth()/50;
                     System.out.println("left");
                 }
             }
@@ -88,7 +88,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (gamePanel.getGameRunning()) {
-                    gamePanel.c.currentX += 5;
+                    gamePanel.c.currentX += (gamePanel.c.currentX + gamePanel.c.width >= getWidth()) ? 0 : getWidth()/50;
                     System.out.println("right");
                 }
             }

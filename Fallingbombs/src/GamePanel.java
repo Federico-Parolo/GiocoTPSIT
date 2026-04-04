@@ -33,9 +33,26 @@ public class GamePanel extends JPanel{
         refresh = new Timer(30, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                ArrayList<Bomb> toRemoveB = new ArrayList<>();
+                ArrayList<Projectile> toRemoveP = new ArrayList<>();
+                synchronized (projectiles) {
+                    for (Projectile p : projectiles) {
+                        synchronized (bombs) {
+                            Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
+                            for (Bomb b : bombs) {
+                                if (rect.intersects(new Rectangle(b.currentX,b.currentY,b.width,b.height))){
+                                    toRemoveP.add(p);
+                                    toRemoveB.add(b);
+                                }
+                            }
+                        }
+                    }
+                    bombs.removeAll(toRemoveB);
+                    projectiles.removeAll(toRemoveP);
+                    currentPoints += toRemoveB.size() * bombPoints *  difficulty;
+                }
                 int l = bombs.size();
                 bombs.removeIf(obj -> obj.currentY > baseY);
-                currentPoints += (l - bombs.size()) * bombPoints;
                 if (l-bombs.size() != 0) {
                     resetGame();
 
@@ -48,7 +65,7 @@ public class GamePanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 synchronized (bombs) {
-                    Bomb b = new Bomb(r.nextInt(0,w),r.nextInt(-100,100));
+                    Bomb b = new Bomb(r.nextInt(0,getWidth()-Bomb.width),r.nextInt(-200,0));
                     bombs.add(b);
                     b.start();
                 }
@@ -106,17 +123,27 @@ public class GamePanel extends JPanel{
         spawnBomb.stop();
         refresh.stop();
 
-        currentPoints = 0;
         bombs.clear();
+        projectiles.clear();
         changeGameState(false);
     }
 
     public void startNewGame() {
         currentPoints = 0;
         bombs.clear();
+        projectiles.clear();
         spawnBomb.start();
         refresh.start();
         changeGameState(true);
+    }
+
+    public void pauseGame() {
+        spawnBomb.stop();
+        refresh.stop();
+    }
+    public void resumeGame() {
+        spawnBomb.start();
+        refresh.start();
     }
 
     public boolean getGameRunning() {

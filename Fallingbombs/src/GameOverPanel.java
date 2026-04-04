@@ -13,18 +13,28 @@ public class GameOverPanel extends JPanel {
         super();
         setSize(w,h);
         setLayout(new BorderLayout());
+
+        gameOverLabel = new JLabel("Game Over");
+        gameOverLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,50));
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        titlePanel.add(gameOverLabel);
+
+        scoreLabel = new JLabel("Score: EXAMPLE");
+        scoreLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,32));
+        JPanel middlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        middlePanel.add(scoreLabel);
+
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
         backToLobbyButton = new JButton("Lobby");
         newGameButton = new JButton("New Game");
-        gameOverLabel = new JLabel("Game Over");
-        scoreLabel = new JLabel("Score: EXAMPLE");
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.Y_AXIS));
         buttonPanel.add(newGameButton);
         buttonPanel.add(backToLobbyButton);
 
+        add(titlePanel,BorderLayout.NORTH);
+        add(middlePanel,BorderLayout.CENTER);
         add(buttonPanel,BorderLayout.SOUTH);
-        add(gameOverLabel,BorderLayout.NORTH);
-        add(scoreLabel,BorderLayout.CENTER);
     }
 
 
