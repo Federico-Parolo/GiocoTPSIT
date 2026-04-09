@@ -75,6 +75,7 @@ public class GameFrame extends JFrame {
         inputMap.put(KeyStroke.getKeyStroke("LEFT"),"Left");
         inputMap.put(KeyStroke.getKeyStroke("RIGHT"),"Right");
         inputMap.put(KeyStroke.getKeyStroke("SPACE"),"Fire");
+        inputMap.put(KeyStroke.getKeyStroke("UP"),"Pause");
         actionMap.put("Left", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -100,6 +101,12 @@ public class GameFrame extends JFrame {
                     Projectile p = gamePanel.c.fire();
                     gamePanel.spawnProjectile(p);
                 }
+            }
+        });
+        actionMap.put("Pause", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gamePanel.pauseGame();
             }
         });
         add(container);

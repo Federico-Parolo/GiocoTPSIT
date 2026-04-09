@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.concurrent.SynchronousQueue;
 
 public class GamePanel extends JPanel{
 
@@ -11,6 +12,7 @@ public class GamePanel extends JPanel{
     int currentPoints = 0;
     int bombPoints = 10;
     Cannon c;
+    PausePanel pausePanel;
     Timer refresh;
     Timer spawnBomb;
     Timer deleteProjectile;
@@ -23,9 +25,10 @@ public class GamePanel extends JPanel{
 
     public GamePanel(int w,int h) {
         super();
-        setLayout(null);
+        setLayout(new BorderLayout());
         setSize(w,h);
         c = new Cannon(w/2,baseY);
+        pausePanel = new PausePanel();
         bombPoints = bombPoints * difficulty;
         bombs = Collections.synchronizedList(new ArrayList<>());
         projectiles = Collections.synchronizedList(new ArrayList<>());
@@ -40,7 +43,7 @@ public class GamePanel extends JPanel{
                         synchronized (bombs) {
                             Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
                             for (Bomb b : bombs) {
-                                if (rect.intersects(new Rectangle(b.currentX,b.currentY,b.width,b.height))){
+                                if (rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.width, Bomb.height)) && b.currentY > 0){
                                     toRemoveP.add(p);
                                     toRemoveB.add(b);
                                 }
@@ -80,6 +83,14 @@ public class GamePanel extends JPanel{
                 }
             }
         });
+        pausePanel.resumeButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resumeGame();
+            }
+        });
+
+        add(pausePanel);
         repaint();
     }
 
@@ -122,7 +133,12 @@ public class GamePanel extends JPanel{
     public void resetGame() {
         spawnBomb.stop();
         refresh.stop();
-
+        // unnecessary only to prevent threads from running without the JVM knowing
+        synchronized (bombs) {
+            for (Bomb b : bombs) {
+                b.stopBomb();
+            }
+        }
         bombs.clear();
         projectiles.clear();
         changeGameState(false);
@@ -140,8 +156,20 @@ public class GamePanel extends JPanel{
     public void pauseGame() {
         spawnBomb.stop();
         refresh.stop();
+        synchronized (bombs) {
+            for (Bomb b : bombs) {
+                b.pauseBomb();
+            }
+        }
+        pausePanel.setVisible(true);
     }
     public void resumeGame() {
+        pausePanel.setVisible(false);
+        synchronized (bombs) {
+            for (Bomb b : bombs) {
+                b.resumeBomb();
+            }
+        }
         spawnBomb.start();
         refresh.start();
     }

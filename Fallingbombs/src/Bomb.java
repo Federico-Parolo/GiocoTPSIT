@@ -5,7 +5,8 @@ public class Bomb extends Thread{
     volatile int currentX,currentY;
     int speed;
     static int width,height;
-    boolean running = true;
+    private volatile boolean running = true;
+    private volatile boolean paused = false;
 
     public Bomb(int x,int y) {
         currentX = x;
@@ -17,7 +18,9 @@ public class Bomb extends Thread{
     @Override
     public void run() {
         while (running) {
-            move();
+            if (!paused) {
+                move();
+            }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -33,5 +36,17 @@ public class Bomb extends Thread{
 
     synchronized void  move() {
         currentY += speed;
+    }
+
+    synchronized public void stopBomb() {
+        running = false;
+    }
+
+    synchronized public void pauseBomb() {
+        paused = true;
+    }
+
+    synchronized public void resumeBomb() {
+        paused = false;
     }
 }
