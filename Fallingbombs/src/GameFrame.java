@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -11,11 +12,14 @@ public class GameFrame extends JFrame {
     GamePanel gamePanel;
     LobbyPanel lobbyPanel;
     GameOverPanel gameOverPanel;
+    PausePanel pausePanel;
     public final String GAME = "game";
     public final String LOBBY = "lobby";
     public final String END = "end";
     JPanel container;
     CardLayout cardLayout;
+    long lastFireTime;
+    public final long FIRE_DELAY = 300;
 
     public GameFrame() {
         super("Falling Bombs");
@@ -26,12 +30,12 @@ public class GameFrame extends JFrame {
         container = new JPanel();
         container.setLayout(cardLayout);
         gamePanel = new GamePanel(w,h);
+        pausePanel = gamePanel.pausePanel;
         lobbyPanel = new LobbyPanel(w,h);
         gameOverPanel = new GameOverPanel(w,h);
         container.add(lobbyPanel, LOBBY); // adding this first to display it on top
         container.add(gamePanel, GAME);
         container.add(gameOverPanel,END);
-        // cardLayout.show(container,LOBBY);
 
         gamePanel.addPropertyChangeListener("gameRunning",new PropertyChangeListener() {
             @Override
@@ -51,7 +55,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(container,GAME);
-                gamePanel.startNewGame();
+                gamePanel.startNewGame(lobbyPanel.diff);
 
             }
         });
@@ -66,21 +70,36 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(container,GAME);
-                gamePanel.startNewGame();
+                gamePanel.startNewGame(lobbyPanel.diff);
+            }
+        });
+
+        pausePanel.lobbyButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(container,LOBBY);
+                gamePanel.resetGame();
+            }
+        });
+        pausePanel.newGameButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gamePanel.resetGame();
+                gamePanel.startNewGame(lobbyPanel.diff);
             }
         });
 
         InputMap inputMap = gamePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = gamePanel.getActionMap();
-        inputMap.put(KeyStroke.getKeyStroke("LEFT"),"Left");
-        inputMap.put(KeyStroke.getKeyStroke("RIGHT"),"Right");
-        inputMap.put(KeyStroke.getKeyStroke("SPACE"),"Fire");
-        inputMap.put(KeyStroke.getKeyStroke("UP"),"Pause");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0),"Left");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0),"Right");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,0),"Fire");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),"Pause");
         actionMap.put("Left", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (gamePanel.getGameRunning()) {
-                    gamePanel.c.currentX -= (gamePanel.c.currentX <= 0) ? 0 : getWidth()/50;
+                    gamePanel.c.currentX -= (gamePanel.c.currentX <= 0) ? 0 : getWidth()/gamePanel.c.MOVEMENT;
                     System.out.println("left");
                 }
             }
@@ -89,7 +108,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (gamePanel.getGameRunning()) {
-                    gamePanel.c.currentX += (gamePanel.c.currentX + gamePanel.c.width >= getWidth()) ? 0 : getWidth()/50;
+                    gamePanel.c.currentX += (gamePanel.c.currentX + gamePanel.c.width >= getWidth()) ? 0 : getWidth()/gamePanel.c.MOVEMENT;
                     System.out.println("right");
                 }
             }
@@ -97,15 +116,20 @@ public class GameFrame extends JFrame {
         actionMap.put("Fire", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (gamePanel.getGameRunning()) {
+                long now = System.currentTimeMillis();
+                if (gamePanel.getGameRunning() && (now - lastFireTime >= FIRE_DELAY)) {
+                    lastFireTime = now;
+
                     Projectile p = gamePanel.c.fire();
                     gamePanel.spawnProjectile(p);
+
                 }
             }
         });
         actionMap.put("Pause", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.out.println("PAuse click");
                 gamePanel.pauseGame();
             }
         });

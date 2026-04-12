@@ -18,15 +18,25 @@ public class PausePanel extends JPanel {
         newGameButton = new JButton("New Game");
         newGameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
+        JPanel middlePanel = new JPanel();
+        middlePanel.setLayout(new BoxLayout(middlePanel,BoxLayout.Y_AXIS));
+        middlePanel.setBorder(BorderFactory.createEmptyBorder(250,30,30,30));
 
-        panel.add(resumeButton);
-        panel.add(lobbyButton);
-        panel.add(newGameButton);
-        add(panel,BorderLayout.CENTER);
-        panel.setOpaque(false);
+        middlePanel.add(resumeButton);
+        middlePanel.add(Box.createRigidArea(new Dimension(0,20)));
+        middlePanel.add(lobbyButton);
+        middlePanel.add(Box.createRigidArea(new Dimension(0,20)));
+        middlePanel.add(newGameButton);
+        add(middlePanel,BorderLayout.CENTER);
+
+        JPanel northPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JLabel pausedLabel = new JLabel("Paused");
+        northPanel.add(Box.createRigidArea(new Dimension(0,30)));
+        northPanel.add(pausedLabel);
+
+        add(northPanel,BorderLayout.NORTH);
+        middlePanel.setOpaque(false);
+        northPanel.setOpaque(false);
         setVisible(false);
     }
 

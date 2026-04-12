@@ -21,6 +21,7 @@ public class GamePanel extends JPanel{
     Random r = new Random();
     int baseY = 500;
     private volatile boolean gameRunning = false;
+    private boolean paused = false;
 
 
     public GamePanel(int w,int h) {
@@ -60,11 +61,13 @@ public class GamePanel extends JPanel{
                     resetGame();
 
                 }
+                baseY = getHeight() * 14 / 15;
+                c.currentY = baseY;
                 repaint();
             }
         });
 
-        spawnBomb = new Timer(1000, new AbstractAction() {
+        spawnBomb = new Timer(1100 - 100 * difficulty, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 synchronized (bombs) {
@@ -104,7 +107,7 @@ public class GamePanel extends JPanel{
 
 
         g2d.setColor(new Color(25,200,25));
-        g2d.fillRect(0,500,getWidth(),getHeight());
+        g2d.fillRect(0,baseY,getWidth(),getHeight());
 
         g2d.setColor(new Color(0,0,0));
         g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,18));
@@ -139,21 +142,36 @@ public class GamePanel extends JPanel{
                 b.stopBomb();
             }
         }
+        synchronized (projectiles) {
+            for (Projectile p : projectiles) {
+                p.stopProjectile();
+            }
+        }
         bombs.clear();
         projectiles.clear();
+        pausePanel.setVisible(false);
         changeGameState(false);
     }
 
-    public void startNewGame() {
+    public void startNewGame(int diff) {
+        difficulty = diff;
+        paused = false;
+        spawnBomb.setDelay(1100 - 100 * difficulty);
         currentPoints = 0;
         bombs.clear();
         projectiles.clear();
         spawnBomb.start();
         refresh.start();
+        pausePanel.setVisible(false);
         changeGameState(true);
     }
 
     public void pauseGame() {
+        if (paused) {
+            paused = false;
+            resumeGame();
+        }
+        paused = true;
         spawnBomb.stop();
         refresh.stop();
         synchronized (bombs) {
@@ -161,13 +179,24 @@ public class GamePanel extends JPanel{
                 b.pauseBomb();
             }
         }
+        synchronized (projectiles) {
+            for (Projectile p : projectiles) {
+                p.pauseProjectile();
+            }
+        }
         pausePanel.setVisible(true);
     }
     public void resumeGame() {
         pausePanel.setVisible(false);
+        paused = false;
         synchronized (bombs) {
             for (Bomb b : bombs) {
                 b.resumeBomb();
+            }
+        }
+        synchronized (projectiles) {
+            for (Projectile p : projectiles) {
+                p.resumeProjectile();
             }
         }
         spawnBomb.start();

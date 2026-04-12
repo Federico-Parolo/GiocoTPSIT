@@ -9,7 +9,10 @@ public class LobbyPanel extends JPanel {
     JButton exitButton;
     JLabel highScoreLabel;
     String highScoreTxt = "High Score: ";
+    JLabel currentDiffLabel;
+    String diffTxt = "Selected: ";
     int currentHighScore = 0;
+    int diff = 1;
 
     public LobbyPanel(int w,int h) {
         super();
@@ -27,9 +30,49 @@ public class LobbyPanel extends JPanel {
         highScoreLabel = new JLabel(highScoreTxt + currentHighScore);
         highScoreLabel.setSize(100,50);
         highScoreLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,32));
-        JPanel middlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        highScoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton diffEasyButton = new JButton("Easy");
+        diffEasyButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                diff = 1;
+                currentDiffLabel.setText(diffTxt + "Easy");
+            }
+        });
+        JButton diffMedButton = new JButton("Medium");
+        diffMedButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                diff = 2;
+                currentDiffLabel.setText(diffTxt + "Medium");
+            }
+        });
+        JButton diffHardButton = new JButton("Hard");
+        diffHardButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                diff = 4;
+                currentDiffLabel.setText(diffTxt + "Hard");
+            }
+        });
+        currentDiffLabel = new JLabel(diffTxt + "Easy");
+        currentDiffLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JPanel diffPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        diffPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        diffPanel.setBorder(BorderFactory.createEmptyBorder(30,0,0,0));
+        diffPanel.add(diffEasyButton);
+        diffPanel.add(diffMedButton);
+        diffPanel.add(diffHardButton);
+        diffPanel.setMaximumSize(diffPanel.getPreferredSize());
+
+        JPanel middlePanel = new JPanel();
+        middlePanel.setLayout(new BoxLayout(middlePanel,BoxLayout.Y_AXIS));
         middlePanel.setBorder(BorderFactory.createEmptyBorder(30,0,30,0));
         middlePanel.add(highScoreLabel);
+        middlePanel.add(diffPanel);
+        middlePanel.add(Box.createRigidArea(new Dimension(30,30)));
+        middlePanel.add(currentDiffLabel);
 
         startButton = new JButton("Start Game");
         startButton.setSize(100,100);
@@ -42,20 +85,13 @@ public class LobbyPanel extends JPanel {
             }
         });
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(30,0,100,0));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(30,0,10,0));
         buttonPanel.add(startButton);
         buttonPanel.add(exitButton);
-
-
-
-
 
         add(titlePanel,BorderLayout.NORTH);
         add(middlePanel,BorderLayout.CENTER);
         add(buttonPanel,BorderLayout.SOUTH);
-
-
-
 
 
     }

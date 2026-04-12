@@ -4,6 +4,7 @@ public class Cannon {
 
     int currentX,currentY;
     int width,height ;
+    int MOVEMENT = 50;
 
     public Cannon(int x,int y) {
         currentX = x;

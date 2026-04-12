@@ -7,6 +7,7 @@ public class Projectile extends Thread{
     int width,height;
     boolean running = true;
     int speed = 2;
+    boolean paused = false;
 
     public Projectile(int currentX,int currentY) {
         width = 10;
@@ -22,7 +23,9 @@ public class Projectile extends Thread{
     @Override
     public void run() {
         while (running) {
-            move();
+            if (!paused) {
+                move();
+            }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -33,5 +36,17 @@ public class Projectile extends Thread{
 
     synchronized public void move() {
         currentY -= 10;
+    }
+
+    synchronized public void stopProjectile() {
+        running = false;
+    }
+
+    synchronized public void pauseProjectile() {
+        paused = true;
+    }
+
+    synchronized public void resumeProjectile() {
+        paused = false;
     }
 }
