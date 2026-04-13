@@ -13,15 +13,15 @@ public class GamePanel extends JPanel{
     int bombPoints = 10;
     Cannon c;
     PausePanel pausePanel;
-    Timer refresh;
-    Timer spawnBomb;
-    Timer deleteProjectile;
+    private Timer refresh;
+    private Timer spawnBomb;
+    private Timer deleteProjectile;
     final java.util.List<Bomb> bombs;
     final java.util.List<Projectile> projectiles;
     Random r = new Random();
     int baseY = 500;
     private volatile boolean gameRunning = false;
-    private boolean paused = false;
+    private boolean paused;
 
 
     public GamePanel(int w,int h) {
@@ -135,6 +135,7 @@ public class GamePanel extends JPanel{
 
     public void resetGame() {
         spawnBomb.stop();
+        deleteProjectile.stop();
         refresh.stop();
         // unnecessary only to prevent threads from running without the JVM knowing
         synchronized (bombs) {
@@ -150,6 +151,7 @@ public class GamePanel extends JPanel{
         bombs.clear();
         projectiles.clear();
         pausePanel.setVisible(false);
+        paused = false;
         changeGameState(false);
     }
 
@@ -162,18 +164,16 @@ public class GamePanel extends JPanel{
         projectiles.clear();
         spawnBomb.start();
         refresh.start();
+        deleteProjectile.start();
         pausePanel.setVisible(false);
         changeGameState(true);
     }
 
     public void pauseGame() {
-        if (paused) {
-            paused = false;
-            resumeGame();
-        }
         paused = true;
         spawnBomb.stop();
         refresh.stop();
+        deleteProjectile.stop();
         synchronized (bombs) {
             for (Bomb b : bombs) {
                 b.pauseBomb();
@@ -188,7 +188,7 @@ public class GamePanel extends JPanel{
     }
     public void resumeGame() {
         pausePanel.setVisible(false);
-        paused = false;
+        System.out.println(pausePanel.isVisible());
         synchronized (bombs) {
             for (Bomb b : bombs) {
                 b.resumeBomb();
@@ -201,6 +201,7 @@ public class GamePanel extends JPanel{
         }
         spawnBomb.start();
         refresh.start();
+        paused = false;
     }
 
     public boolean getGameRunning() {
@@ -220,5 +221,9 @@ public class GamePanel extends JPanel{
             projectiles.add(p);
             p.start();
         }
+    }
+
+    public boolean isPaused() {
+        return paused;
     }
 }

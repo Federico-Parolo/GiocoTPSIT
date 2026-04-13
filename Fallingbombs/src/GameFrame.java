@@ -129,8 +129,12 @@ public class GameFrame extends JFrame {
         actionMap.put("Pause", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("PAuse click");
-                gamePanel.pauseGame();
+                System.out.println("Pause click");
+                if (gamePanel.isPaused()) {
+                    gamePanel.resumeGame();
+                } else {
+                    gamePanel.pauseGame();
+                }
             }
         });
         add(container);
@@ -140,4 +144,5 @@ public class GameFrame extends JFrame {
     public void startGame() {
         this.setVisible(true);
     }
+
 }
