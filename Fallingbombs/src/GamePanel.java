@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-import java.util.concurrent.SynchronousQueue;
 
 public class GamePanel extends JPanel{
 
@@ -16,10 +15,11 @@ public class GamePanel extends JPanel{
     private Timer refresh;
     private Timer spawnBomb;
     private Timer deleteProjectile;
-    final java.util.List<Bomb> bombs;
-    final java.util.List<Projectile> projectiles;
+    private final java.util.List<Bomb> bombs;
+    private final java.util.List<Projectile> projectiles;
+    private final java.util.List<Explosion> explosions;
     Random r = new Random();
-    int baseY = 500;
+    private int baseY = 500;
     private volatile boolean gameRunning = false;
     private boolean paused;
 
@@ -33,6 +33,7 @@ public class GamePanel extends JPanel{
         bombPoints = bombPoints * difficulty;
         bombs = Collections.synchronizedList(new ArrayList<>());
         projectiles = Collections.synchronizedList(new ArrayList<>());
+        explosions = Collections.synchronizedList(new ArrayList<>());
 
         refresh = new Timer(30, new AbstractAction() {
             @Override
@@ -44,9 +45,10 @@ public class GamePanel extends JPanel{
                         synchronized (bombs) {
                             Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
                             for (Bomb b : bombs) {
-                                if (rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.width, Bomb.height)) && b.currentY > 0){
+                                if (rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.WIDTH, Bomb.HEIGHT)) && b.currentY > 0){
                                     toRemoveP.add(p);
                                     toRemoveB.add(b);
+                                    explosions.add(new Explosion(Explosion.COLLISION,p.currentX,p.currentY));
                                 }
                             }
                         }
@@ -55,14 +57,24 @@ public class GamePanel extends JPanel{
                     projectiles.removeAll(toRemoveP);
                     currentPoints += toRemoveB.size() * bombPoints *  difficulty;
                 }
-                int l = bombs.size();
-                bombs.removeIf(obj -> obj.currentY > baseY);
-                if (l-bombs.size() != 0) {
-                    resetGame();
 
+                // check if bombs are removed this way = game finished
+                synchronized (bombs) {
+                    for (Bomb b : bombs) {
+                        if (b.currentY /*+ Bomb.HEIGHT*/ >= baseY) {
+                            resetGame();
+                            break;
+                        }
+                    }
                 }
+
+                // update for cannon and grass height for resizable window
                 baseY = getHeight() * 14 / 15;
                 c.currentY = baseY;
+
+                // update for all explosion so they disappear when lifespan <= 0
+                updateExplosions();
+
                 repaint();
             }
         });
@@ -71,7 +83,7 @@ public class GamePanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 synchronized (bombs) {
-                    Bomb b = new Bomb(r.nextInt(0,getWidth()-Bomb.width),r.nextInt(-200,0));
+                    Bomb b = new Bomb(r.nextInt(0,getWidth()-Bomb.WIDTH),r.nextInt(-200,0));
                     bombs.add(b);
                     b.start();
                 }
@@ -125,6 +137,13 @@ public class GamePanel extends JPanel{
         synchronized (projectiles) {
             for (Projectile p : projectiles) {
                 p.drawSprite(g2d);
+            }
+        }
+
+        // drawing explosions for when objects collide or game ends
+        synchronized (explosions) {
+            for (Explosion e : explosions) {
+                e.drawSprite(g2d);
             }
         }
 
@@ -225,5 +244,12 @@ public class GamePanel extends JPanel{
 
     public boolean isPaused() {
         return paused;
+    }
+
+    synchronized public void updateExplosions() {
+        for (Explosion e : explosions) {
+            e.changeLifespan(-1);
+        }
+        explosions.removeIf(e -> e.getLifespan() <= 0);
     }
 }

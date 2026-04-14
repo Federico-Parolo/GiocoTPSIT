@@ -108,7 +108,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (gamePanel.getGameRunning()) {
-                    gamePanel.c.currentX += (gamePanel.c.currentX + gamePanel.c.width >= getWidth()) ? 0 : getWidth()/gamePanel.c.MOVEMENT;
+                    gamePanel.c.currentX += (gamePanel.c.currentX + gamePanel.c.WIDTH >= getWidth()) ? 0 : getWidth()/gamePanel.c.MOVEMENT;
                     System.out.println("right");
                 }
             }

@@ -4,14 +4,14 @@ public class Bomb extends Thread{
 
     volatile int currentX,currentY;
     int speed;
-    static int width,height;
+    static final int WIDTH = 15;
+    static final int HEIGHT = 15;
     private volatile boolean running = true;
     private volatile boolean paused = false;
 
     public Bomb(int x,int y) {
         currentX = x;
         currentY = y;
-        width = height = 15;
         speed = (int)(Math.random() * 10) + 1;
     }
 
@@ -31,7 +31,7 @@ public class Bomb extends Thread{
 
 
     public void drawSprite(Graphics2D g2d) {
-        g2d.fillOval(currentX,currentY,width,height);
+        g2d.fillOval(currentX,currentY, WIDTH, HEIGHT);
     }
 
     synchronized void  move() {

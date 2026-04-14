@@ -17,6 +17,7 @@ public class Projectile extends Thread{
     }
 
     public void drawSprite(Graphics2D g2d) {
+        g2d.setColor(new Color(0,0,0));
         g2d.fillRect(currentX,currentY,width,height);
     }
 

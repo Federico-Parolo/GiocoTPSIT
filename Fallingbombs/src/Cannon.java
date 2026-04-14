@@ -3,23 +3,24 @@ import java.awt.*;
 public class Cannon {
 
     int currentX,currentY;
-    int width,height ;
+    static final int WIDTH = 25;
+    static final int HEIGHT = 30;
     int MOVEMENT = 50;
 
     public Cannon(int x,int y) {
         currentX = x;
         currentY = y;
-        height = 30;
-        width = 25;
+
     }
 
 
     public void drawSprite(Graphics2D g2d) {
-        g2d.fillRect(currentX,currentY- height /2, width, height);
+        g2d.setColor(new Color(0,0,0));
+        g2d.fillRect(currentX,currentY- HEIGHT /2, WIDTH, HEIGHT);
     }
 
     public Projectile fire() {
         System.out.println("Fired");
-        return new Projectile(currentX + width /2,currentY);
+        return new Projectile(currentX + WIDTH /2,currentY);
     }
 }
