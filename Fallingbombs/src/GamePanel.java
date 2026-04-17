@@ -15,6 +15,7 @@ public class GamePanel extends JPanel{
     private Timer refresh;
     private Timer spawnBomb;
     private Timer deleteProjectile;
+    private Timer spawnPowerUp;
     private final java.util.List<Bomb> bombs;
     private final java.util.List<Projectile> projectiles;
     private final java.util.List<Explosion> explosions;
@@ -248,7 +249,7 @@ public class GamePanel extends JPanel{
 
     synchronized public void updateExplosions() {
         for (Explosion e : explosions) {
-            e.changeLifespan(-1);
+            e.updateExplosion(-1);
         }
         explosions.removeIf(e -> e.getLifespan() <= 0);
     }

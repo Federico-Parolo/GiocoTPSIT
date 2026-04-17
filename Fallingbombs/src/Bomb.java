@@ -1,6 +1,6 @@
 import java.awt.*;
 
-public class Bomb extends Thread{
+public class Bomb extends Thread implements Drawable{
 
     volatile int currentX,currentY;
     int speed;

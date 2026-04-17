@@ -1,6 +1,6 @@
 import java.awt.*;
 
-public class Cannon {
+public class Cannon implements Drawable{
 
     int currentX,currentY;
     static final int WIDTH = 25;

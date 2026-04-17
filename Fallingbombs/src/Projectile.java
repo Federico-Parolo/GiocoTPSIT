@@ -1,6 +1,6 @@
 import java.awt.*;
 
-public class Projectile extends Thread{
+public class Projectile extends Thread implements Drawable{
 
     int currentX;
     int currentY;
