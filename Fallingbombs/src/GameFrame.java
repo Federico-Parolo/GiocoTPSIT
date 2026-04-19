@@ -55,7 +55,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(container,GAME);
-                gamePanel.startNewGame(lobbyPanel.getDiff());
+                gamePanel.startNewGame(lobbyPanel.getDiff(), lobbyPanel.getPowerUpEn());
 
             }
         });
@@ -70,7 +70,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(container,GAME);
-                gamePanel.startNewGame(lobbyPanel.getDiff());
+                gamePanel.startNewGame(lobbyPanel.getDiff(),lobbyPanel.getPowerUpEn());
             }
         });
 
@@ -85,7 +85,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 gamePanel.resetGame();
-                gamePanel.startNewGame(lobbyPanel.getDiff());
+                gamePanel.startNewGame(lobbyPanel.getDiff(), lobbyPanel.getPowerUpEn());
             }
         });
 

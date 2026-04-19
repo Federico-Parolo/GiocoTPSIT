@@ -148,4 +148,8 @@ public class LobbyPanel extends JPanel {
     public int getDiff() {
         return diff;
     }
+
+    public boolean getPowerUpEn() {
+        return powerUpEn.isSelected();
+    }
 }

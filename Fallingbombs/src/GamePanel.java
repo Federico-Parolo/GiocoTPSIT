@@ -14,15 +14,17 @@ public class GamePanel extends JPanel{
     PausePanel pausePanel;
     private Timer refresh;
     private Timer spawnBomb;
-    private Timer deleteProjectile;
+    private Timer deleteInvalidEntity;
     private Timer spawnPowerUp;
     private final java.util.List<Bomb> bombs;
     private final java.util.List<Projectile> projectiles;
     private final java.util.List<Explosion> explosions;
+    private final java.util.List<PowerUp> powerUps;
     Random r = new Random();
     private int baseY = 500;
     private volatile boolean gameRunning = false;
     private boolean paused;
+    private boolean powerUpEn;
 
 
     public GamePanel(int w,int h) {
@@ -35,21 +37,25 @@ public class GamePanel extends JPanel{
         bombs = Collections.synchronizedList(new ArrayList<>());
         projectiles = Collections.synchronizedList(new ArrayList<>());
         explosions = Collections.synchronizedList(new ArrayList<>());
+        powerUps = Collections.synchronizedList(new ArrayList<>());
 
         refresh = new Timer(30, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ArrayList<Bomb> toRemoveB = new ArrayList<>();
                 ArrayList<Projectile> toRemoveP = new ArrayList<>();
+                ArrayList<PowerUp> toRemovePup = new ArrayList<>();
+
+                // bomb interactions
                 synchronized (projectiles) {
                     for (Projectile p : projectiles) {
+                        Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
                         synchronized (bombs) {
-                            Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
                             for (Bomb b : bombs) {
-                                if (rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.WIDTH, Bomb.HEIGHT)) && b.currentY > 0){
+                                if (b.currentY > 0 && rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.WIDTH, Bomb.HEIGHT))){
                                     toRemoveP.add(p);
                                     toRemoveB.add(b);
-                                    explosions.add(new Explosion(Explosion.COLLISION,p.currentX,p.currentY));
+                                    explosions.add(new Explosion(Explosion.BOMB_COLLISION,p.currentX,p.currentY));
                                 }
                             }
                         }
@@ -57,6 +63,26 @@ public class GamePanel extends JPanel{
                     bombs.removeAll(toRemoveB);
                     projectiles.removeAll(toRemoveP);
                     currentPoints += toRemoveB.size() * bombPoints *  difficulty;
+
+                    // powerUp interactions
+
+                    synchronized (projectiles) {
+                        for (Projectile p : projectiles) {
+                            Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
+                            synchronized (powerUps) {
+                                for (PowerUp pUp : powerUps) {
+                                    if (pUp.currentY > 0 && rect.intersects(new Rectangle(pUp.currentX,pUp.currentY,PowerUp.WIDTH,PowerUp.HEIGHT))) {
+                                        toRemoveP.add(p);
+                                        toRemovePup.add(pUp);
+                                        explosions.add(new Explosion(Explosion.POWER_UP,p.currentX,p.currentY));
+                                    }
+                                }
+                            }
+                        }
+                        powerUps.removeAll(toRemovePup);
+                        projectiles.removeAll(toRemoveP);
+                        applyPowerUps(toRemovePup);
+                    }
                 }
 
                 // check if bombs are removed this way = game finished
@@ -79,7 +105,7 @@ public class GamePanel extends JPanel{
                 repaint();
             }
         });
-
+        // spawn rate: EASY = 1000ms, MED = 900ms, HARD = 700ms
         spawnBomb = new Timer(1100 - 100 * difficulty, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -90,23 +116,36 @@ public class GamePanel extends JPanel{
                 }
             }
         });
-
-        deleteProjectile = new Timer(1000, new AbstractAction() {
+        deleteInvalidEntity = new Timer(1000, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 synchronized (projectiles) {
                     projectiles.removeIf(obj -> obj.currentY < 0);
                 }
+                synchronized (powerUps) {
+                    powerUps.removeIf(obj -> obj.currentY > baseY); // TODO modify to getHeight()
+                }
             }
         });
+        spawnPowerUp = new Timer(4800 + 200 * difficulty, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                synchronized (powerUps) {
+                    PowerUp p = new PowerUp(r.nextInt(0,getWidth()-PowerUp.WIDTH),r.nextInt(-200,0));
+                    powerUps.add(p);
+                    p.start();
+                }
+            }
+        });
+        
         pausePanel.resumeButton.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 resumeGame();
             }
         });
-
         add(pausePanel);
+        
         repaint();
     }
 
@@ -147,6 +186,13 @@ public class GamePanel extends JPanel{
                 e.drawSprite(g2d);
             }
         }
+        if (powerUpEn) {
+            synchronized (powerUps) {
+                for (PowerUp p : powerUps) {
+                    p.drawSprite(g2d);
+                }
+            }
+        }
 
         c.drawSprite(g2d);
 
@@ -155,7 +201,8 @@ public class GamePanel extends JPanel{
 
     public void resetGame() {
         spawnBomb.stop();
-        deleteProjectile.stop();
+        if (powerUpEn) spawnPowerUp.stop();
+        deleteInvalidEntity.stop();
         refresh.stop();
         // unnecessary only to prevent threads from running without the JVM knowing
         synchronized (bombs) {
@@ -168,23 +215,33 @@ public class GamePanel extends JPanel{
                 p.stopProjectile();
             }
         }
+        if (powerUpEn) {
+            synchronized (powerUps) {
+                for (PowerUp p : powerUps) {
+                    p.stopPowerUp();
+                }
+            }
+        }
         bombs.clear();
         projectiles.clear();
+        if (powerUpEn) powerUps.clear();
         pausePanel.setVisible(false);
         paused = false;
         changeGameState(false);
     }
 
-    public void startNewGame(int diff) {
+    public void startNewGame(int diff, boolean powerUpEn) {
         difficulty = diff;
         paused = false;
+        this.powerUpEn = powerUpEn;
         spawnBomb.setDelay(1100 - 100 * difficulty);
         currentPoints = 0;
         bombs.clear();
         projectiles.clear();
         spawnBomb.start();
+        spawnPowerUp.start();
         refresh.start();
-        deleteProjectile.start();
+        deleteInvalidEntity.start();
         pausePanel.setVisible(false);
         changeGameState(true);
     }
@@ -192,8 +249,9 @@ public class GamePanel extends JPanel{
     public void pauseGame() {
         paused = true;
         spawnBomb.stop();
+        spawnPowerUp.stop();
         refresh.stop();
-        deleteProjectile.stop();
+        deleteInvalidEntity.stop();
         synchronized (bombs) {
             for (Bomb b : bombs) {
                 b.pauseBomb();
@@ -202,6 +260,11 @@ public class GamePanel extends JPanel{
         synchronized (projectiles) {
             for (Projectile p : projectiles) {
                 p.pauseProjectile();
+            }
+        }
+        synchronized (powerUps) {
+            for (PowerUp p : powerUps) {
+                p.resumePowerUp();
             }
         }
         pausePanel.setVisible(true);
@@ -219,7 +282,13 @@ public class GamePanel extends JPanel{
                 p.resumeProjectile();
             }
         }
+        synchronized (powerUps) {
+            for (PowerUp p : powerUps) {
+                p.resumePowerUp();
+            }
+        }
         spawnBomb.start();
+        spawnPowerUp.start();
         refresh.start();
         paused = false;
     }
@@ -252,5 +321,12 @@ public class GamePanel extends JPanel{
             e.updateExplosion(-1);
         }
         explosions.removeIf(e -> e.getLifespan() <= 0);
+    }
+
+    public void applyPowerUps(ArrayList<PowerUp> toApply) {
+        // negro usali
+        for (PowerUp p : toApply) {
+            System.out.println(p.type);
+        }
     }
 }
