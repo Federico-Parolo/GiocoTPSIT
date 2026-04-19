@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -10,6 +11,10 @@ public class GamePanel extends JPanel{
     int difficulty = 1;
     int currentPoints = 0;
     int bombPoints = 10;
+    private long lastFireTime;
+    private long fireDelay = 300;
+    static final int DEF_FIRE_DELAY = 300;
+    private boolean leftPressed = false,rightPressed = false;
     Cannon c;
     PausePanel pausePanel;
     private Timer refresh;
@@ -20,6 +25,7 @@ public class GamePanel extends JPanel{
     private final java.util.List<Projectile> projectiles;
     private final java.util.List<Explosion> explosions;
     private final java.util.List<PowerUp> powerUps;
+    private final java.util.List<PowerUp> activePowerUps;
     Random r = new Random();
     private int baseY = 500;
     private volatile boolean gameRunning = false;
@@ -38,10 +44,22 @@ public class GamePanel extends JPanel{
         projectiles = Collections.synchronizedList(new ArrayList<>());
         explosions = Collections.synchronizedList(new ArrayList<>());
         powerUps = Collections.synchronizedList(new ArrayList<>());
+        activePowerUps = Collections.synchronizedList(new ArrayList<>());;
+
+        // used to set up the input gathering and the actions to perform on key pressed/released
+        initInput(getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),getActionMap());
 
         refresh = new Timer(30, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (leftPressed) {
+                    c.currentX -= (c.currentX <= 0) ? 0 : getWidth()/c.MOVEMENT;
+                    //System.out.println("left");
+                }
+                if (rightPressed) {
+                    c.currentX += (c.currentX + Cannon.WIDTH >= getWidth()) ? 0 : getWidth()/c.MOVEMENT;
+                    //System.out.println("right");
+                }
                 ArrayList<Bomb> toRemoveB = new ArrayList<>();
                 ArrayList<Projectile> toRemoveP = new ArrayList<>();
                 ArrayList<PowerUp> toRemovePup = new ArrayList<>();
@@ -49,7 +67,7 @@ public class GamePanel extends JPanel{
                 // bomb interactions
                 synchronized (projectiles) {
                     for (Projectile p : projectiles) {
-                        Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
+                        Rectangle rect = new Rectangle(p.currentX,p.currentY,p.WIDTH,p.HEIGHT);
                         synchronized (bombs) {
                             for (Bomb b : bombs) {
                                 if (b.currentY > 0 && rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.WIDTH, Bomb.HEIGHT))){
@@ -68,12 +86,15 @@ public class GamePanel extends JPanel{
 
                     synchronized (projectiles) {
                         for (Projectile p : projectiles) {
-                            Rectangle rect = new Rectangle(p.currentX,p.currentY,p.width,p.height);
+                            Rectangle rect = new Rectangle(p.currentX,p.currentY,p.WIDTH,p.HEIGHT);
                             synchronized (powerUps) {
                                 for (PowerUp pUp : powerUps) {
                                     if (pUp.currentY > 0 && rect.intersects(new Rectangle(pUp.currentX,pUp.currentY,PowerUp.WIDTH,PowerUp.HEIGHT))) {
                                         toRemoveP.add(p);
                                         toRemovePup.add(pUp);
+                                        synchronized (activePowerUps) {
+                                            activePowerUps.add(pUp);
+                                        }
                                         explosions.add(new Explosion(Explosion.POWER_UP,p.currentX,p.currentY));
                                     }
                                 }
@@ -81,7 +102,7 @@ public class GamePanel extends JPanel{
                         }
                         powerUps.removeAll(toRemovePup);
                         projectiles.removeAll(toRemoveP);
-                        applyPowerUps(toRemovePup);
+                        applyPowerUps();
                     }
                 }
 
@@ -198,6 +219,75 @@ public class GamePanel extends JPanel{
 
     }
 
+    public void initInput(InputMap inputMap, ActionMap actionMap) {
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0),"Left-Pressed");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0),"Right-Pressed");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0,true),"Left-Released");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0,true),"Right-Released");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,0),"Fire");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),"Pause");
+
+        actionMap.put("Left-Pressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    leftPressed = true;
+                    //System.out.println("pressL");
+                }
+            }
+        });
+        actionMap.put("Right-Pressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    rightPressed = true;
+                    //System.out.println("pressR");
+                }
+            }
+        });
+        actionMap.put("Left-Released", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    leftPressed = false;
+                    //System.out.println("UNpressL");
+                }
+            }
+        });
+        actionMap.put("Right-Released", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    rightPressed = false;
+                    //System.out.println("UNpressR");
+                }
+            }
+        });
+        actionMap.put("Fire", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                long now = System.currentTimeMillis();
+                if (gameRunning && (now - lastFireTime >= fireDelay)) {
+                    lastFireTime = now;
+                    Projectile p = c.fire();
+                    spawnProjectile(p);
+
+                }
+            }
+        });
+        actionMap.put("Pause", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //System.out.println("Pause click");
+                if (isPaused()) {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            }
+        });
+    }
+
 
     public void resetGame() {
         spawnBomb.stop();
@@ -239,7 +329,7 @@ public class GamePanel extends JPanel{
         bombs.clear();
         projectiles.clear();
         spawnBomb.start();
-        spawnPowerUp.start();
+        if (powerUpEn) spawnPowerUp.start();
         refresh.start();
         deleteInvalidEntity.start();
         pausePanel.setVisible(false);
@@ -264,7 +354,7 @@ public class GamePanel extends JPanel{
         }
         synchronized (powerUps) {
             for (PowerUp p : powerUps) {
-                p.resumePowerUp();
+                p.pausePowerUp();
             }
         }
         pausePanel.setVisible(true);
@@ -323,10 +413,81 @@ public class GamePanel extends JPanel{
         explosions.removeIf(e -> e.getLifespan() <= 0);
     }
 
-    public void applyPowerUps(ArrayList<PowerUp> toApply) {
+    public void applyPowerUps() {
         // negro usali
-        for (PowerUp p : toApply) {
+        for (PowerUp p : activePowerUps) {
             System.out.println(p.type);
+            switch (p.type) {
+                case FireRate -> {
+                    Timer t = new Timer(0, new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            fireDelay = 150;
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            fireDelay = DEF_FIRE_DELAY;
+                        }
+                    });
+                    t.setRepeats(false);
+                    t.start();
+                }
+                case SlowMo -> {
+                    Timer t = new Timer(0, new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+
+                        }
+                    });
+                    t.setRepeats(false);
+                    t.start();
+                }
+                case Speed -> {
+                    Timer t = new Timer(0, new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            c.MOVEMENT = 60;
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            c.MOVEMENT = Cannon.DEF_MOVEMENT;
+                        }
+                    });
+                    t.setRepeats(false);
+                    t.start();
+                }
+                case TriShot -> {
+                    Timer t = new Timer(0, new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // do something
+                        }
+                    });
+                    t.setRepeats(false);
+                    t.start();
+                }
+                case Immortal -> {
+                    Timer t = new Timer(0, new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            fireDelay = 150;
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            fireDelay = DEF_FIRE_DELAY;
+                        }
+                    });
+                    t.setRepeats(false);
+                    t.start();
+                }
+                case null, default -> System.out.println("Not recognized power Up");
+            }
         }
     }
 }

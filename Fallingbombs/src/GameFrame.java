@@ -18,8 +18,6 @@ public class GameFrame extends JFrame {
     public final String END = "end";
     JPanel container;
     CardLayout cardLayout;
-    long lastFireTime;
-    public final long FIRE_DELAY = 300;
 
     public GameFrame() {
         super("Falling Bombs");
@@ -89,54 +87,6 @@ public class GameFrame extends JFrame {
             }
         });
 
-        InputMap inputMap = gamePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        ActionMap actionMap = gamePanel.getActionMap();
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0),"Left");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0),"Right");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,0),"Fire");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),"Pause");
-        actionMap.put("Left", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (gamePanel.getGameRunning()) {
-                    gamePanel.c.currentX -= (gamePanel.c.currentX <= 0) ? 0 : getWidth()/gamePanel.c.MOVEMENT;
-                    System.out.println("left");
-                }
-            }
-        });
-        actionMap.put("Right", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (gamePanel.getGameRunning()) {
-                    gamePanel.c.currentX += (gamePanel.c.currentX + gamePanel.c.WIDTH >= getWidth()) ? 0 : getWidth()/gamePanel.c.MOVEMENT;
-                    System.out.println("right");
-                }
-            }
-        });
-        actionMap.put("Fire", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                long now = System.currentTimeMillis();
-                if (gamePanel.getGameRunning() && (now - lastFireTime >= FIRE_DELAY)) {
-                    lastFireTime = now;
-
-                    Projectile p = gamePanel.c.fire();
-                    gamePanel.spawnProjectile(p);
-
-                }
-            }
-        });
-        actionMap.put("Pause", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Pause click");
-                if (gamePanel.isPaused()) {
-                    gamePanel.resumeGame();
-                } else {
-                    gamePanel.pauseGame();
-                }
-            }
-        });
         add(container);
     }
 

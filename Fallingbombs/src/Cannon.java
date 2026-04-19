@@ -5,12 +5,12 @@ public class Cannon implements Drawable{
     int currentX,currentY;
     static final int WIDTH = 25;
     static final int HEIGHT = 30;
-    int MOVEMENT = 50;
+    int MOVEMENT = 75; // defines the ratio of screen that the cannon moves in a single input
+    static final int DEF_MOVEMENT = 75;
 
     public Cannon(int x,int y) {
         currentX = x;
         currentY = y;
-
     }
 
 
@@ -20,7 +20,6 @@ public class Cannon implements Drawable{
     }
 
     public Projectile fire() {
-        System.out.println("Fired");
-        return new Projectile(currentX + WIDTH /2,currentY);
+        return new Projectile(currentX + WIDTH /2 - Projectile.WIDTH/2,currentY);
     }
 }

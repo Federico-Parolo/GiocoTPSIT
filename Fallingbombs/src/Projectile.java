@@ -4,21 +4,20 @@ public class Projectile extends Thread implements Drawable{
 
     int currentX;
     int currentY;
-    int width,height;
+    public static final int WIDTH = 10;
+    public static final int HEIGHT = 15;
     boolean running = true;
     int speed = 2;
     boolean paused = false;
 
     public Projectile(int currentX,int currentY) {
-        width = 10;
-        height = 15;
         this.currentX = currentX;
         this.currentY = currentY;
     }
 
     public void drawSprite(Graphics2D g2d) {
         g2d.setColor(new Color(0,0,0));
-        g2d.fillRect(currentX,currentY,width,height);
+        g2d.fillRect(currentX,currentY, WIDTH, HEIGHT);
     }
 
     @Override
