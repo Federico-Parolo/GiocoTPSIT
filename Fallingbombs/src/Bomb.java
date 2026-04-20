@@ -3,7 +3,8 @@ import java.awt.*;
 public class Bomb extends Thread implements Drawable{
 
     volatile int currentX,currentY;
-    int speed;
+    public volatile int speed;
+    public final int DEF_SPEED;
     static final int WIDTH = 15;
     static final int HEIGHT = 15;
     private volatile boolean running = true;
@@ -13,6 +14,7 @@ public class Bomb extends Thread implements Drawable{
         currentX = x;
         currentY = y;
         speed = (int)(Math.random() * 10) + 1;
+        DEF_SPEED = speed;
     }
 
     @Override

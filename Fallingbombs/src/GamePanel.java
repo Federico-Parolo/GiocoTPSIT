@@ -31,6 +31,7 @@ public class GamePanel extends JPanel{
     private volatile boolean gameRunning = false;
     private boolean paused;
     private boolean powerUpEn;
+    private boolean immortal = false;
 
 
     public GamePanel(int w,int h) {
@@ -109,12 +110,15 @@ public class GamePanel extends JPanel{
                 // check if bombs are removed this way = game finished
                 synchronized (bombs) {
                     for (Bomb b : bombs) {
-                        if (b.currentY /*+ Bomb.HEIGHT*/ >= baseY) {
-                            resetGame();
+                        if (b.currentY >= baseY) {
+                            if (!immortal) resetGame();
+                            toRemoveB.add(b);
+                            explosions.add(new Explosion(Explosion.ENDGAME,b.currentX,b.currentY));
                             break;
                         }
                     }
                 }
+                bombs.removeAll(toRemoveB);
 
                 // update for cannon and grass height for resizable window
                 baseY = getHeight() * 14 / 15;
@@ -144,7 +148,7 @@ public class GamePanel extends JPanel{
                     projectiles.removeIf(obj -> obj.currentY < 0);
                 }
                 synchronized (powerUps) {
-                    powerUps.removeIf(obj -> obj.currentY > baseY); // TODO modify to getHeight()
+                    powerUps.removeIf(obj -> obj.currentY > getHeight());
                 }
             }
         });
@@ -361,7 +365,6 @@ public class GamePanel extends JPanel{
     }
     public void resumeGame() {
         pausePanel.setVisible(false);
-        System.out.println(pausePanel.isVisible());
         synchronized (bombs) {
             for (Bomb b : bombs) {
                 b.resumeBomb();
@@ -381,10 +384,6 @@ public class GamePanel extends JPanel{
         spawnPowerUp.start();
         refresh.start();
         paused = false;
-    }
-
-    public boolean getGameRunning() {
-        return gameRunning;
     }
 
     public void changeGameState(boolean newState) {
@@ -414,80 +413,82 @@ public class GamePanel extends JPanel{
     }
 
     public void applyPowerUps() {
-        // negro usali
+        ArrayList<PowerUp> toRemovePuP = new ArrayList<>();
         for (PowerUp p : activePowerUps) {
-            System.out.println(p.type);
+
+            p.updateLifespan(-1);
+            // for every power up apply it and if finished revert back stats
             switch (p.type) {
+
                 case FireRate -> {
-                    Timer t = new Timer(0, new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            fireDelay = 150;
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                            fireDelay = DEF_FIRE_DELAY;
+                    if (p.getLifespan() < 0) {
+                        toRemovePuP.add(p);
+                        fireDelay = DEF_FIRE_DELAY;
+                        System.out.println("FireDelay Deactivated");
+                    } else {
+                        if (fireDelay != DEF_FIRE_DELAY/2) {
+                            fireDelay = DEF_FIRE_DELAY / 2;
+                            System.out.println("FireDelay Active");
                         }
-                    });
-                    t.setRepeats(false);
-                    t.start();
+                    }
                 }
                 case SlowMo -> {
-                    Timer t = new Timer(0, new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-
+                    // slows down every bomb to a predefined speed that scales on difficulty
+                    if (p.getLifespan() < 0) {
+                        toRemovePuP.add(p);
+                        synchronized (bombs) {
+                            for (Bomb b : bombs) {
+                                b.speed = b.DEF_SPEED;
+                            }
                         }
-                    });
-                    t.setRepeats(false);
-                    t.start();
+                        System.out.println("SlowMo Deactivated");
+                    } else {
+                        synchronized (bombs) {
+                            for (Bomb b : bombs) {
+                                b.speed = difficulty;
+                            }
+                        }
+                    }
                 }
                 case Speed -> {
-                    Timer t = new Timer(0, new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            c.MOVEMENT = 60;
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                            c.MOVEMENT = Cannon.DEF_MOVEMENT;
+                    // with every input the cannon moves faster horizontally
+                    if (p.getLifespan() < 0) {
+                        toRemovePuP.add(p);
+                        c.MOVEMENT = Cannon.DEF_MOVEMENT;
+                        System.out.println("Speed deactivated");
+                    } else {
+                        if (c.MOVEMENT != (int)(Cannon.DEF_MOVEMENT * 0.75)) {
+                            c.MOVEMENT = (int)(Cannon.DEF_MOVEMENT * 0.75);
+                            System.out.println("Speed Active");
                         }
-                    });
-                    t.setRepeats(false);
-                    t.start();
+                    }
                 }
+                // the cannon fires 3 projectiles in a rapid sequence
                 case TriShot -> {
-                    Timer t = new Timer(0, new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            // do something
-                        }
-                    });
-                    t.setRepeats(false);
-                    t.start();
+                    if (p.getLifespan() < 0) {
+                        toRemovePuP.add(p);
+                        System.out.println("TriShot Deactivated");
+                    } else {
+
+                    }
                 }
                 case Immortal -> {
-                    Timer t = new Timer(0, new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            fireDelay = 150;
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                            fireDelay = DEF_FIRE_DELAY;
-                        }
-                    });
-                    t.setRepeats(false);
-                    t.start();
+                    if (p.getLifespan() < 0) {
+                        toRemovePuP.add(p);
+                        immortal = false;
+                        System.out.println("Immortal Deactivated");
+                    } else {
+                        immortal = true;
+                        System.out.println("Immortal Active");
+                    }
                 }
-                case null, default -> System.out.println("Not recognized power Up");
+                case null, default -> {
+                    toRemovePuP.add(p);
+                    System.out.println("Not recognized power Up");
+                }
             }
         }
+        // removing reference to used powerUps
+        activePowerUps.removeAll(toRemovePuP);
     }
 }

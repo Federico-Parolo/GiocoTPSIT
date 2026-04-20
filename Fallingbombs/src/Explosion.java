@@ -5,6 +5,7 @@ public class Explosion implements Drawable{
     volatile private int lifespan = 20; // intended in frames (how many refreshes survives)
     String type;
     int diameter = 10;
+
     public static final String BOMB_COLLISION = "bomb-projectile";
     public static final String ENDGAME = "ground";
     public static final String POWER_UP = "powerUP-projectile";
@@ -23,10 +24,10 @@ public class Explosion implements Drawable{
         } else if (type.equals(POWER_UP)) {
             g2d.setColor(new Color(10,150,250, 255-diameter*4));
             g2d.fillRoundRect(currentX - diameter/2,currentY - diameter/2,diameter,diameter, 5,5);
+        } else if (type.equals(ENDGAME)) {
+            g2d.setColor(new Color(250,150,10, 255-diameter*4));
+            g2d.fillOval(currentX,currentY- diameter,15,diameter);
         }
-        /* else if (type.equals(ENDGAME)) {
-            g2d.fillOval(currentX,currentY,10,20);
-        }*/
         else {
             g2d.setColor(new Color(255,0,0));
             g2d.fillOval(currentX,currentY,diameter,diameter);
