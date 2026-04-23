@@ -6,7 +6,7 @@ public class PowerUp extends Thread implements Drawable{
     volatile private int lifespan; // in frames
     public enum Type {
         Speed(150),
-        FireRate(50),
+        FireRate(80),
         SlowMo(80),
         TriShot(80), // not implemented
         Immortal(50);

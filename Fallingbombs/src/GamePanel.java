@@ -32,6 +32,7 @@ public class GamePanel extends JPanel{
     private boolean paused;
     private boolean powerUpEn;
     private boolean immortal = false;
+    private boolean triShotActive = false;
 
 
     public GamePanel(int w,int h) {
@@ -97,6 +98,7 @@ public class GamePanel extends JPanel{
                                             activePowerUps.add(pUp);
                                         }
                                         explosions.add(new Explosion(Explosion.POWER_UP,p.currentX,p.currentY));
+                                        //explosions.add(new Explosion()); TODO add effect displaying power up type
                                     }
                                 }
                             }
@@ -273,8 +275,19 @@ public class GamePanel extends JPanel{
                 long now = System.currentTimeMillis();
                 if (gameRunning && (now - lastFireTime >= fireDelay)) {
                     lastFireTime = now;
-                    Projectile p = c.fire();
-                    spawnProjectile(p);
+                    if (triShotActive) {
+                        Projectile p = c.fire();
+                        spawnProjectile(p);
+                        p = c.fire();
+                        p.currentX -= 20;
+                        spawnProjectile(p);
+                        p = c.fire();
+                        p.currentX += 20;
+                        spawnProjectile(p);
+                    } else {
+                        Projectile p = c.fire();
+                        spawnProjectile(p);
+                    }
 
                 }
             }
@@ -467,9 +480,10 @@ public class GamePanel extends JPanel{
                 case TriShot -> {
                     if (p.getLifespan() < 0) {
                         toRemovePuP.add(p);
+                        triShotActive = false;
                         System.out.println("TriShot Deactivated");
                     } else {
-
+                        triShotActive = true;
                     }
                 }
                 case Immortal -> {

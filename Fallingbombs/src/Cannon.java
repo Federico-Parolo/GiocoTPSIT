@@ -15,9 +15,10 @@ public class Cannon implements Drawable{
 
 
     public void drawSprite(Graphics2D g2d) {
-        /*
+
         g2d.setColor(new Color(0,0,0));
-        g2d.fillRect(currentX,currentY- HEIGHT /2, WIDTH, HEIGHT);*/
+        g2d.fillRect(currentX,currentY- HEIGHT /2, WIDTH, HEIGHT);
+        /*
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -68,7 +69,7 @@ public class Cannon implements Drawable{
                 barrelY + barrelHeight / 2,
                 barrelWidth,
                 (int)(HEIGHT * 0.05)
-        );
+        );*/
     }
 
     public Projectile fire() {

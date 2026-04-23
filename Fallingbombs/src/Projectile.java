@@ -4,8 +4,8 @@ public class Projectile extends Thread implements Drawable{
 
     int currentX;
     int currentY;
-    public static final int WIDTH = 15;
-    public static final int HEIGHT = 20;
+    public static final int WIDTH = 10;
+    public static final int HEIGHT = 15;
     boolean running = true;
     int speed = 2;
     boolean paused = false;
@@ -16,10 +16,10 @@ public class Projectile extends Thread implements Drawable{
     }
 
     public void drawSprite(Graphics2D g2d) {
-        /*
-        g2dd.setColor(new Color(0,0,0));
-        g2dd.fillRect(currentX,currentY, WIDTH, HEIGHT);*/
 
+        g2d.setColor(new Color(59, 59, 59));
+        g2d.fillRect(currentX,currentY, WIDTH, HEIGHT);
+        /*
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -56,7 +56,7 @@ public class Projectile extends Thread implements Drawable{
         tail.addPoint(bodyX + bodyWidth, tailY);
 
         g2d.setColor(new Color(255, 200, 50));
-        g2d.fillPolygon(tail);
+        g2d.fillPolygon(tail);*/
     }
 
     @Override
