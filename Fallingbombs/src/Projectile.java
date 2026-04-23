@@ -19,44 +19,6 @@ public class Projectile extends Thread implements Drawable{
 
         g2d.setColor(new Color(59, 59, 59));
         g2d.fillRect(currentX,currentY, WIDTH, HEIGHT);
-        /*
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-
-
-
-
-        int centerX = currentX + WIDTH / 2;
-
-        // ---- BODY ----
-        int bodyWidth = (int)(WIDTH * 0.5);
-        int bodyX = centerX - bodyWidth / 2;
-        int bodyHeight = (int)(HEIGHT * 0.6);
-
-        g2d.setColor(new Color(180, 180, 180));
-        g2d.fillRoundRect(bodyX, currentY + (int)(HEIGHT * 0.2),
-                bodyWidth, bodyHeight,
-                bodyWidth, bodyWidth);
-
-        // ---- TIP ----
-        Polygon tip = new Polygon();
-        tip.addPoint(centerX, currentY);
-        tip.addPoint(bodyX, currentY + (int)(HEIGHT * 0.2));
-        tip.addPoint(bodyX + bodyWidth, currentY + (int)(HEIGHT * 0.2));
-
-        g2d.setColor(new Color(255, 120, 50));
-        g2d.fillPolygon(tip);
-
-        // ---- TAIL ----
-        Polygon tail = new Polygon();
-        int tailY = currentY + (int)(HEIGHT * 0.8);
-
-        tail.addPoint(centerX, currentY + HEIGHT);
-        tail.addPoint(bodyX, tailY);
-        tail.addPoint(bodyX + bodyWidth, tailY);
-
-        g2d.setColor(new Color(255, 200, 50));
-        g2d.fillPolygon(tail);*/
     }
 
     @Override

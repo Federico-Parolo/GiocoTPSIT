@@ -76,6 +76,8 @@ public class LobbyPanel extends JPanel {
 
         difficultyDetails = new JLabel();
         difficultyDetails.setAlignmentX(Component.CENTER_ALIGNMENT);
+        difficultyDetails.setHorizontalAlignment(SwingConstants.CENTER);
+        difficultyDetails.setFont(new Font(Font.MONOSPACED,Font.BOLD,20));
 
         powerUpEn = new JCheckBox("Enable Power-ups");
         powerUpEn.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -120,14 +122,29 @@ public class LobbyPanel extends JPanel {
         currentDiffLabel.setText(diffTxt + diffs.get(diff));
         switch (d) {
             case EASY:
-                difficultyDetails.setText("easy");
+                difficultyDetails.setText(
+                        "<html><div style='text-align:center;'>"
+                                + "Beginner:<br>Bombs: 1 sec<br>PowerUp: 5 sec"
+                                + "</div></html>"
+                );
                 break;
+
             case MED:
-                difficultyDetails.setText("med");
+                difficultyDetails.setText(
+                        "<html><div style='text-align:center;'>"
+                                + "Intermediate:<br>Bombs: 0.9 sec<br>PowerUp: 7 sec"
+                                + "</div></html>"
+                );
                 break;
+
             case HARD:
-                difficultyDetails.setText("hard");
+                difficultyDetails.setText(
+                        "<html><div style='text-align:center;'>"
+                                + "Advanced:<br>Bombs: 0.7 sec<br>PowerUp: 9 sec"
+                                + "</div></html>"
+                );
                 break;
+
             default:
                 difficultyDetails.setText("problem");
         }

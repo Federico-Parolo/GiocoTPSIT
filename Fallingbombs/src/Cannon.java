@@ -18,58 +18,6 @@ public class Cannon implements Drawable{
 
         g2d.setColor(new Color(0,0,0));
         g2d.fillRect(currentX,currentY- HEIGHT /2, WIDTH, HEIGHT);
-        /*
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-
-        int centerX = currentX + WIDTH / 2;
-
-// ---- BASE ----
-        int baseHeight = (int)(HEIGHT * 0.4);
-
-        g2d.setColor(new Color(60, 60, 60));
-        g2d.fillRoundRect(
-                currentX,
-                currentY + HEIGHT - baseHeight,
-                WIDTH,
-                baseHeight,
-                8, 8
-        );
-
-// ---- BARREL ----
-        int barrelWidth = (int)(WIDTH * 0.4);
-        int barrelHeight = (int)(HEIGHT * 0.5);
-
-        int barrelX = centerX - barrelWidth / 2;
-        int barrelY = currentY + (int)(HEIGHT * 0.1);
-
-        g2d.setColor(new Color(120, 120, 120));
-        g2d.fillRoundRect(
-                barrelX,
-                barrelY,
-                barrelWidth,
-                barrelHeight,
-                barrelWidth,
-                barrelWidth
-        );
-
-// ---- MUZZLE ----
-        int muzzleSize = (int)(barrelWidth * 0.8);
-
-        int muzzleX = centerX - muzzleSize / 2;
-        int muzzleY = barrelY - muzzleSize / 2;
-
-        g2d.setColor(new Color(200, 200, 200));
-        g2d.fillOval(muzzleX, muzzleY, muzzleSize, muzzleSize);
-
-// ---- DETAIL STRIPE ----
-        g2d.setColor(new Color(90, 90, 90));
-        g2d.fillRect(
-                barrelX,
-                barrelY + barrelHeight / 2,
-                barrelWidth,
-                (int)(HEIGHT * 0.05)
-        );*/
     }
 
     public Projectile fire() {

@@ -75,7 +75,7 @@ public class GamePanel extends JPanel{
                                 if (b.currentY > 0 && rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.WIDTH, Bomb.HEIGHT))){
                                     toRemoveP.add(p);
                                     toRemoveB.add(b);
-                                    explosions.add(new Explosion(Explosion.BOMB_COLLISION,p.currentX,p.currentY));
+                                    explosions.add(new Explosion(Explosion.EffectType.Collision,p.currentX,p.currentY));
                                 }
                             }
                         }
@@ -97,8 +97,8 @@ public class GamePanel extends JPanel{
                                         synchronized (activePowerUps) {
                                             activePowerUps.add(pUp);
                                         }
-                                        explosions.add(new Explosion(Explosion.POWER_UP,p.currentX,p.currentY));
-                                        //explosions.add(new Explosion()); TODO add effect displaying power up type
+                                        explosions.add(new Explosion(Explosion.EffectType.PowerUp,p.currentX,p.currentY));
+                                        explosions.add(new Explosion(getEffectType(pUp.type), pUp.currentX, pUp.currentY));
                                     }
                                 }
                             }
@@ -115,7 +115,7 @@ public class GamePanel extends JPanel{
                         if (b.currentY >= baseY) {
                             if (!immortal) resetGame();
                             toRemoveB.add(b);
-                            explosions.add(new Explosion(Explosion.ENDGAME,b.currentX,b.currentY));
+                            explosions.add(new Explosion(Explosion.EffectType.Endgame,b.currentX,b.currentY));
                             break;
                         }
                     }
@@ -154,7 +154,7 @@ public class GamePanel extends JPanel{
                 }
             }
         });
-        spawnPowerUp = new Timer(4800 + 200 * difficulty, new AbstractAction() {
+        spawnPowerUp = new Timer(4000 + 1000 * difficulty, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 synchronized (powerUps) {
@@ -187,6 +187,32 @@ public class GamePanel extends JPanel{
 
         g2d.setColor(new Color(25,200,25));
         g2d.fillRect(0,baseY,getWidth(),getHeight());
+
+        if (immortal) {
+            g2d.setColor(new Color(119, 119, 119));
+            g2d.fillRect(0,baseY,getWidth(),5);
+            int triangleCount = 15;
+            int triWidth = 20;
+            int triHeight = 20;
+            int totalW = getWidth();
+            int totalTriW = triangleCount * triWidth;
+            int spacing = Math.max(0, (totalW - totalTriW) / (triangleCount + 1));
+
+            int x = spacing;
+
+            for (int i = 0; i < triangleCount; i++) {
+                int cx = x + triWidth / 2;
+
+                Polygon t = new Polygon();
+                t.addPoint(cx, baseY - triHeight); // top
+                t.addPoint(x, baseY);              // left
+                t.addPoint(x + triWidth, baseY);   // right
+
+                g2d.fillPolygon(t);
+
+                x += triWidth + spacing;
+            }
+        }
 
         g2d.setColor(new Color(0,0,0));
         g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,18));
@@ -504,5 +530,29 @@ public class GamePanel extends JPanel{
         }
         // removing reference to used powerUps
         activePowerUps.removeAll(toRemovePuP);
+    }
+
+    public Explosion.EffectType getEffectType(PowerUp.Type t) {
+        switch (t) {
+            case FireRate -> {
+                return Explosion.EffectType.FireRateActive;
+            }
+            case SlowMo -> {
+                return Explosion.EffectType.SlowMoActive;
+            }
+            case Speed -> {
+                return Explosion.EffectType.SpeedActive;
+            }
+            case TriShot -> {
+                return Explosion.EffectType.TriShotActive;
+            }
+            case Immortal -> {
+                return Explosion.EffectType.ImmortalActive;
+            }
+            case null, default -> {
+                return Explosion.EffectType.Collision;
+            }
+        }
+
     }
 }
