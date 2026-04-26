@@ -57,6 +57,13 @@ public class GameFrame extends JFrame {
 
             }
         });
+        lobbyPanel.autoPlayButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(container,GAME);
+                gamePanel.startNewAIGame();
+            }
+        });
 
         gameOverPanel.backToLobbyButton.addActionListener(new AbstractAction() {
             @Override

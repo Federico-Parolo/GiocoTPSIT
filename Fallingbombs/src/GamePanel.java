@@ -39,6 +39,7 @@ public class GamePanel extends JPanel{
         super();
         setLayout(new BorderLayout());
         setSize(w,h);
+        Explosion.gamePanel = this;
         c = new Cannon(w/2,baseY);
         pausePanel = new PausePanel();
         bombPoints = bombPoints * difficulty;
@@ -51,7 +52,7 @@ public class GamePanel extends JPanel{
         // used to set up the input gathering and the actions to perform on key pressed/released
         initInput(getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),getActionMap());
 
-        refresh = new Timer(30, new AbstractAction() {
+        refresh = new Timer(10, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (leftPressed) {
@@ -214,8 +215,9 @@ public class GamePanel extends JPanel{
             }
         }
 
+        // draw current points label
         g2d.setColor(new Color(0,0,0));
-        g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,18));
+        g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,25));
         g2d.drawString("Points: " + currentPoints,5,20);
 
 
@@ -364,6 +366,7 @@ public class GamePanel extends JPanel{
     }
 
     public void startNewGame(int diff, boolean powerUpEn) {
+        //System.out.println(powerUpEn);
         difficulty = diff;
         paused = false;
         this.powerUpEn = powerUpEn;
@@ -377,6 +380,10 @@ public class GamePanel extends JPanel{
         deleteInvalidEntity.start();
         pausePanel.setVisible(false);
         changeGameState(true);
+    }
+
+    public void startNewAIGame() {
+
     }
 
     public void pauseGame() {

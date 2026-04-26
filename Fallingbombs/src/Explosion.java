@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 
 public class Explosion implements Drawable{
@@ -5,6 +6,7 @@ public class Explosion implements Drawable{
     volatile private int lifespan = 20; // intended in frames (how many refreshes survives)
     EffectType type;
     int diameter = 10;
+    static JPanel gamePanel;
 
     public enum EffectType {
         Collision,
@@ -24,36 +26,50 @@ public class Explosion implements Drawable{
     }
 
     public void drawSprite(Graphics2D g2d) {
-        g2d.setColor(new Color(0,0,0,200));
+
+        g2d.setFont(new Font(Font.MONOSPACED, Font.BOLD, 50));
+
         if (type == EffectType.Collision) {
-            g2d.setColor(new Color(250,150,10, 255-diameter*4));
-            g2d.fillOval(currentX - diameter/2,currentY - diameter/2,diameter,diameter);
+            g2d.setColor(new Color(250,150,10, 255 - diameter * 4));
+            g2d.fillOval(currentX - diameter/2, currentY - diameter/2, diameter, diameter);
+
         } else if (type == EffectType.PowerUp) {
-            g2d.setColor(new Color(10,150,250, 255-diameter*4));
-            g2d.fillRoundRect(currentX - diameter/2,currentY - diameter/2,diameter,diameter, 5,5);
+            g2d.setColor(new Color(10,150,250, 255 - diameter * 4));
+            g2d.fillRoundRect(currentX - diameter/2, currentY - diameter/2, diameter, diameter, 5, 5);
+
         } else if (type == EffectType.Endgame) {
-            g2d.setColor(new Color(250,150,10, 255-diameter*4));
-            g2d.fillOval(currentX,currentY- diameter,15,diameter);
+            g2d.setColor(new Color(250,150,10, 255 - diameter * 4));
+            g2d.fillOval(currentX, currentY - diameter, 15, diameter);
+
         } else if (type == EffectType.ImmortalActive) {
-            g2d.drawString("IMMORTAL",currentX-1,currentY-1);
-            g2d.setColor(new Color(255,200,50));
-            g2d.drawString("IMMORTAL",currentX,currentY);
+            Color c = new Color(255,200,50);
+            String txt = "IMMORTAL";
+            drawCenteredText(g2d,txt,c);
+
+
         } else if (type == EffectType.SlowMoActive) {
-            g2d.drawString("SLOWMO",currentX-1,currentY-1);
-            g2d.setColor(new Color(150,250,250));
-            g2d.drawString("SLOWMO",currentX,currentY);
+            Color c = new Color(150,250,250);
+            String txt = "SLOWMO";
+            drawCenteredText(g2d,txt,c);
+
+
         } else if (type == EffectType.FireRateActive) {
-            g2d.drawString("FIRERATE",currentX-1,currentY-1);
-            g2d.setColor(new Color(255,100,50));
-            g2d.drawString("FIRERATE",currentX,currentY);
+            Color c = new Color(255,100,50);
+            String txt = "FIRERATE";
+            drawCenteredText(g2d,txt,c);
+
         } else if (type == EffectType.SpeedActive) {
-            g2d.drawString("SPEED",currentX-1,currentY-1);
-            g2d.setColor(new Color(0,255,42));
-            g2d.drawString("SPEED",currentX,currentY);
+            Color c = new Color(0,255,42);
+            String txt = "SPEED";
+            drawCenteredText(g2d,txt,c);
+
+
         } else if (type == EffectType.TriShotActive) {
-            g2d.drawString("TRISHOT",currentX-1,currentY-1);
-            g2d.setColor(new Color(0,0,255));
-            g2d.drawString("TRISHOT",currentX,currentY);
+            Color c = new Color(0,0,255);
+            String txt = "TRISHOT";
+            drawCenteredText(g2d,txt,c);
+
+
         }
         else {
             g2d.setColor(new Color(255,0,0));
@@ -69,4 +85,22 @@ public class Explosion implements Drawable{
     synchronized public int getLifespan() {
         return lifespan;
     }
+
+    private void drawCenteredText(Graphics2D g2d,String s,Color c) {
+        int off = g2d.getFontMetrics().stringWidth(s);
+        int cx = gamePanel.getWidth() / 2 - off / 2;
+        int cy = gamePanel.getHeight() / 2;
+        g2d.setColor(new Color(0,0,0, 255 - diameter * 8));
+        // drawing text outline
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx == 0 && dy == 0) continue;
+                g2d.drawString(s, cx + dx, cy + dy);
+            }
+        }
+        g2d.setColor(c);
+        g2d.drawString(s, cx, cy);
+    }
+
 }
+

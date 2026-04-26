@@ -8,6 +8,7 @@ public class LobbyPanel extends JPanel {
     JLabel gameTitle;
     JButton startButton;
     JButton exitButton;
+    JButton autoPlayButton;
     JLabel highScoreLabel;
     String highScoreTxt = "High Score: ";
     JLabel currentDiffLabel;
@@ -105,9 +106,11 @@ public class LobbyPanel extends JPanel {
                 System.exit(0);
             }
         });
+        autoPlayButton = new JButton("AI Mode");
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(30,0,10,0));
         buttonPanel.add(startButton);
+        buttonPanel.add(autoPlayButton);
         buttonPanel.add(exitButton);
 
         add(titlePanel,BorderLayout.NORTH);
