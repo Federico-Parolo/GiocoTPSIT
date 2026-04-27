@@ -52,9 +52,10 @@ public class GamePanel extends JPanel{
         // used to set up the input gathering and the actions to perform on key pressed/released
         initInput(getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),getActionMap());
 
-        refresh = new Timer(10, new AbstractAction() {
+        refresh = new Timer(30, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // cannon movement
                 if (leftPressed) {
                     c.currentX -= (c.currentX <= 0) ? 0 : getWidth()/c.MOVEMENT;
                     //System.out.println("left");
