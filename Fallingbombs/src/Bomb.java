@@ -13,7 +13,7 @@ public class Bomb extends Thread implements Drawable{
     public Bomb(int x,int y) {
         currentX = x;
         currentY = y;
-        speed = (int)(Math.random() * 10) + 1;
+        speed = (int)(Math.random() * 5) + 1;
         DEF_SPEED = speed;
     }
 
@@ -24,7 +24,7 @@ public class Bomb extends Thread implements Drawable{
                 move();
             }
             try {
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

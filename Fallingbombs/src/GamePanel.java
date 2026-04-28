@@ -35,6 +35,18 @@ public class GamePanel extends JPanel{
     private boolean triShotActive = false;
 
 
+    // action variables to manage input
+    public Action pauseAction;
+    public Action fireAction;
+    public Action leftPressAction;
+    public Action rightPressAction;
+    public Action leftUnPressAction;
+    public Action rightUnPressAction;
+
+    // AI Mode
+    private final Bot bot;
+    private boolean aiModeOn = false;
+
     public GamePanel(int w,int h) {
         super();
         setLayout(new BorderLayout());
@@ -49,6 +61,8 @@ public class GamePanel extends JPanel{
         powerUps = Collections.synchronizedList(new ArrayList<>());
         activePowerUps = Collections.synchronizedList(new ArrayList<>());;
 
+        // setting up the cations to later chain to input system
+        initActions();
         // used to set up the input gathering and the actions to perform on key pressed/released
         initInput(getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),getActionMap());
 
@@ -57,11 +71,11 @@ public class GamePanel extends JPanel{
             public void actionPerformed(ActionEvent e) {
                 // cannon movement
                 if (leftPressed) {
-                    c.currentX -= (c.currentX <= 0) ? 0 : getWidth()/c.MOVEMENT;
+                    moveLeft();
                     //System.out.println("left");
                 }
                 if (rightPressed) {
-                    c.currentX += (c.currentX + Cannon.WIDTH >= getWidth()) ? 0 : getWidth()/c.MOVEMENT;
+                    moveRight();
                     //System.out.println("right");
                 }
                 ArrayList<Bomb> toRemoveB = new ArrayList<>();
@@ -71,7 +85,7 @@ public class GamePanel extends JPanel{
                 // bomb interactions
                 synchronized (projectiles) {
                     for (Projectile p : projectiles) {
-                        Rectangle rect = new Rectangle(p.currentX,p.currentY,p.WIDTH,p.HEIGHT);
+                        Rectangle rect = new Rectangle(p.currentX,p.currentY, Projectile.WIDTH, Projectile.HEIGHT);
                         synchronized (bombs) {
                             for (Bomb b : bombs) {
                                 if (b.currentY > 0 && rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.WIDTH, Bomb.HEIGHT))){
@@ -90,7 +104,7 @@ public class GamePanel extends JPanel{
 
                     synchronized (projectiles) {
                         for (Projectile p : projectiles) {
-                            Rectangle rect = new Rectangle(p.currentX,p.currentY,p.WIDTH,p.HEIGHT);
+                            Rectangle rect = new Rectangle(p.currentX,p.currentY, Projectile.WIDTH, Projectile.HEIGHT);
                             synchronized (powerUps) {
                                 for (PowerUp pUp : powerUps) {
                                     if (pUp.currentY > 0 && rect.intersects(new Rectangle(pUp.currentX,pUp.currentY,PowerUp.WIDTH,PowerUp.HEIGHT))) {
@@ -174,8 +188,18 @@ public class GamePanel extends JPanel{
             }
         });
         add(pausePanel);
-        
+
+        // creation of the AI
+        bot = new Bot(this,bombs,c);
+
         repaint();
+    }
+
+    public void moveLeft() {
+        c.currentX -= (c.currentX <= 0) ? 0 : getWidth()/c.MOVEMENT;
+    }
+    public void  moveRight() {
+        c.currentX += (c.currentX + Cannon.WIDTH >= getWidth()) ? 0 : getWidth()/c.MOVEMENT;
     }
 
 
@@ -254,7 +278,78 @@ public class GamePanel extends JPanel{
 
     }
 
-    public void initInput(InputMap inputMap, ActionMap actionMap) {
+    private void initActions() {
+
+        leftPressAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    leftPressed = true;
+                }
+            }
+        };
+
+
+        rightPressAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    rightPressed = true;
+                }
+            }
+        };
+
+
+        leftUnPressAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    leftPressed = false;
+                }
+            }
+        };
+
+
+        rightUnPressAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (gameRunning) {
+                    rightPressed = false;
+                }
+            }
+        };
+
+
+        fireAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fire();
+            }
+        };
+
+
+        pauseAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (isPaused()) {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            }
+        };
+    }
+
+    private void toggleInputEn(boolean state) {
+        //pauseAction.setEnabled(false);
+        fireAction.setEnabled(state);
+        leftPressAction.setEnabled(state);
+        rightPressAction.setEnabled(state);
+        leftUnPressAction.setEnabled(state);
+        rightUnPressAction.setEnabled(state);
+    }
+
+    private void initInput(InputMap inputMap, ActionMap actionMap) {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0),"Left-Pressed");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0),"Right-Pressed");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0,true),"Left-Released");
@@ -262,76 +357,12 @@ public class GamePanel extends JPanel{
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,0),"Fire");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),"Pause");
 
-        actionMap.put("Left-Pressed", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (gameRunning) {
-                    leftPressed = true;
-                    //System.out.println("pressL");
-                }
-            }
-        });
-        actionMap.put("Right-Pressed", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (gameRunning) {
-                    rightPressed = true;
-                    //System.out.println("pressR");
-                }
-            }
-        });
-        actionMap.put("Left-Released", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (gameRunning) {
-                    leftPressed = false;
-                    //System.out.println("UNpressL");
-                }
-            }
-        });
-        actionMap.put("Right-Released", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (gameRunning) {
-                    rightPressed = false;
-                    //System.out.println("UNpressR");
-                }
-            }
-        });
-        actionMap.put("Fire", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                long now = System.currentTimeMillis();
-                if (gameRunning && (now - lastFireTime >= fireDelay)) {
-                    lastFireTime = now;
-                    if (triShotActive) {
-                        Projectile p = c.fire();
-                        spawnProjectile(p);
-                        p = c.fire();
-                        p.currentX -= 20;
-                        spawnProjectile(p);
-                        p = c.fire();
-                        p.currentX += 20;
-                        spawnProjectile(p);
-                    } else {
-                        Projectile p = c.fire();
-                        spawnProjectile(p);
-                    }
-
-                }
-            }
-        });
-        actionMap.put("Pause", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //System.out.println("Pause click");
-                if (isPaused()) {
-                    resumeGame();
-                } else {
-                    pauseGame();
-                }
-            }
-        });
+        actionMap.put("Left-Pressed", leftPressAction);
+        actionMap.put("Right-Pressed", rightPressAction);
+        actionMap.put("Left-Released", leftUnPressAction);
+        actionMap.put("Right-Released", rightUnPressAction);
+        actionMap.put("Fire", fireAction);
+        actionMap.put("Pause", pauseAction);
     }
 
 
@@ -360,9 +391,13 @@ public class GamePanel extends JPanel{
         }
         bombs.clear();
         projectiles.clear();
+        explosions.clear();
         if (powerUpEn) powerUps.clear();
         pausePanel.setVisible(false);
         paused = false;
+        aiModeOn = false;
+        bot.stopBot();
+        toggleInputEn(true);
         changeGameState(false);
     }
 
@@ -375,6 +410,7 @@ public class GamePanel extends JPanel{
         currentPoints = 0;
         bombs.clear();
         projectiles.clear();
+        explosions.clear();
         spawnBomb.start();
         if (powerUpEn) spawnPowerUp.start();
         refresh.start();
@@ -383,8 +419,22 @@ public class GamePanel extends JPanel{
         changeGameState(true);
     }
 
-    public void startNewAIGame() {
-
+    public void startNewAIGame(int diff) {
+        aiModeOn = true;
+        toggleInputEn(false);
+        difficulty = diff;
+        paused = false;
+        this.powerUpEn = false;
+        spawnBomb.setDelay(1100-100 * difficulty);
+        currentPoints = 0;
+        bombs.clear();
+        projectiles.clear();
+        spawnBomb.start();
+        refresh.start();
+        deleteInvalidEntity.start();
+        pausePanel.setVisible(false);
+        changeGameState(true);
+        bot.start();
     }
 
     public void pauseGame() {
@@ -428,7 +478,7 @@ public class GamePanel extends JPanel{
             }
         }
         spawnBomb.start();
-        spawnPowerUp.start();
+        if (powerUpEn) spawnPowerUp.start();
         refresh.start();
         paused = false;
     }
@@ -562,5 +612,28 @@ public class GamePanel extends JPanel{
             }
         }
 
+    }
+
+    public void fire() {
+        long now = System.currentTimeMillis();
+        if (gameRunning && (now - lastFireTime >= fireDelay)) {
+            lastFireTime = now;
+
+            if (triShotActive) {
+                Projectile p = c.fire();
+                spawnProjectile(p);
+
+                p = c.fire();
+                p.currentX -= 20;
+                spawnProjectile(p);
+
+                p = c.fire();
+                p.currentX += 20;
+                spawnProjectile(p);
+            } else {
+                Projectile p = c.fire();
+                spawnProjectile(p);
+            }
+        }
     }
 }

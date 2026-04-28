@@ -17,8 +17,10 @@ public class Projectile extends Thread implements Drawable{
 
     public void drawSprite(Graphics2D g2d) {
 
-        g2d.setColor(new Color(59, 59, 59));
+        g2d.setColor(new Color(255,255,255));
         g2d.fillRect(currentX,currentY, WIDTH, HEIGHT);
+        g2d.setColor(new Color(100,100,100));
+        g2d.fillRect(currentX+1,currentY+1,WIDTH-2,HEIGHT-2);
     }
 
     @Override

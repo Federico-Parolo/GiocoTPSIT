@@ -61,7 +61,7 @@ public class GameFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(container,GAME);
-                gamePanel.startNewAIGame();
+                gamePanel.startNewAIGame(lobbyPanel.getDiff());
             }
         });
 
