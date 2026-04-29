@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-public class GamePanel extends JPanel{
+public class GamePanel extends JPanel {
 
     int difficulty = 1;
     int currentPoints = 0;
@@ -14,13 +14,13 @@ public class GamePanel extends JPanel{
     private long lastFireTime;
     private long fireDelay = 300;
     static final int DEF_FIRE_DELAY = 300;
-    private boolean leftPressed = false,rightPressed = false;
+    private boolean leftPressed = false, rightPressed = false;
     Cannon c;
     PausePanel pausePanel;
-    private Timer refresh;
-    private Timer spawnBomb;
-    private Timer deleteInvalidEntity;
-    private Timer spawnPowerUp;
+    private final Timer refresh;
+    private final Timer spawnBomb;
+    private final Timer deleteInvalidEntity;
+    private final Timer spawnPowerUp;
     private final java.util.List<Bomb> bombs;
     private final java.util.List<Projectile> projectiles;
     private final java.util.List<Explosion> explosions;
@@ -43,28 +43,30 @@ public class GamePanel extends JPanel{
     public Action leftUnPressAction;
     public Action rightUnPressAction;
 
-    // AI Mode
-    private final Bot bot;
+    // Auto play Mode
+    private Bot bot;
     private boolean aiModeOn = false;
 
-    public GamePanel(int w,int h) {
+    public GamePanel(int w, int h) {
         super();
         setLayout(new BorderLayout());
-        setSize(w,h);
+        setSize(w, h);
         Explosion.gamePanel = this;
-        c = new Cannon(w/2,baseY);
+        c = new Cannon(w / 2, baseY);
         pausePanel = new PausePanel();
         bombPoints = bombPoints * difficulty;
+        // every method in these arrays is automatically synchronized
         bombs = Collections.synchronizedList(new ArrayList<>());
         projectiles = Collections.synchronizedList(new ArrayList<>());
         explosions = Collections.synchronizedList(new ArrayList<>());
         powerUps = Collections.synchronizedList(new ArrayList<>());
-        activePowerUps = Collections.synchronizedList(new ArrayList<>());;
+        activePowerUps = Collections.synchronizedList(new ArrayList<>());
+        ;
 
         // setting up the cations to later chain to input system
         initActions();
         // used to set up the input gathering and the actions to perform on key pressed/released
-        initInput(getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),getActionMap());
+        initInput(getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW), getActionMap());
 
         refresh = new Timer(30, new AbstractAction() {
             @Override
@@ -83,59 +85,67 @@ public class GamePanel extends JPanel{
                 ArrayList<PowerUp> toRemovePup = new ArrayList<>();
 
                 // bomb interactions
-                synchronized (projectiles) {
+
+                synchronized (projectiles){
                     for (Projectile p : projectiles) {
-                        Rectangle rect = new Rectangle(p.currentX,p.currentY, Projectile.WIDTH, Projectile.HEIGHT);
-                        synchronized (bombs) {
+                        Rectangle rect = new Rectangle(p.currentX, p.currentY, Projectile.WIDTH, Projectile.HEIGHT);
+
+                        synchronized (bombs){
                             for (Bomb b : bombs) {
-                                if (b.currentY > 0 && rect.intersects(new Rectangle(b.currentX,b.currentY, Bomb.WIDTH, Bomb.HEIGHT))){
+                                if (b.currentY > 0 && rect.intersects(new Rectangle(b.currentX, b.currentY, Bomb.WIDTH, Bomb.HEIGHT))) {
                                     toRemoveP.add(p);
                                     toRemoveB.add(b);
-                                    explosions.add(new Explosion(Explosion.EffectType.Collision,p.currentX,p.currentY));
+                                    explosions.add(new Explosion(Explosion.EffectType.Collision, p.currentX, p.currentY));
                                 }
                             }
                         }
-                    }
-                    bombs.removeAll(toRemoveB);
-                    projectiles.removeAll(toRemoveP);
-                    currentPoints += toRemoveB.size() * bombPoints *  difficulty;
 
-                    // powerUp interactions
-
-                    synchronized (projectiles) {
-                        for (Projectile p : projectiles) {
-                            Rectangle rect = new Rectangle(p.currentX,p.currentY, Projectile.WIDTH, Projectile.HEIGHT);
-                            synchronized (powerUps) {
-                                for (PowerUp pUp : powerUps) {
-                                    if (pUp.currentY > 0 && rect.intersects(new Rectangle(pUp.currentX,pUp.currentY,PowerUp.WIDTH,PowerUp.HEIGHT))) {
-                                        toRemoveP.add(p);
-                                        toRemovePup.add(pUp);
-                                        synchronized (activePowerUps) {
-                                            activePowerUps.add(pUp);
-                                        }
-                                        explosions.add(new Explosion(Explosion.EffectType.PowerUp,p.currentX,p.currentY));
-                                        explosions.add(new Explosion(getEffectType(pUp.type), pUp.currentX, pUp.currentY));
-                                    }
-                                }
-                            }
-                        }
-                        powerUps.removeAll(toRemovePup);
-                        projectiles.removeAll(toRemoveP);
-                        applyPowerUps();
                     }
                 }
+                bombs.removeAll(toRemoveB);
+                projectiles.removeAll(toRemoveP);
+                currentPoints += toRemoveB.size() * bombPoints * difficulty;
+
+                // powerUp interactions
+
+
+                synchronized (projectiles){
+                    for (Projectile p : projectiles) {
+                        Rectangle rect = new Rectangle(p.currentX, p.currentY, Projectile.WIDTH, Projectile.HEIGHT);
+
+                        synchronized (powerUps){
+                            for (PowerUp pUp : powerUps) {
+                                if (pUp.currentY > 0 && rect.intersects(new Rectangle(pUp.currentX, pUp.currentY, PowerUp.WIDTH, PowerUp.HEIGHT))) {
+                                    toRemoveP.add(p);
+                                    toRemovePup.add(pUp);
+                                    activePowerUps.add(pUp);
+
+                                    explosions.add(new Explosion(Explosion.EffectType.PowerUp, p.currentX, p.currentY));
+                                    explosions.add(new Explosion(getEffectType(pUp.type), pUp.currentX, pUp.currentY));
+                                }
+                            }
+                        }
+
+                    }
+                }
+                powerUps.removeAll(toRemovePup);
+                projectiles.removeAll(toRemoveP);
+                applyPowerUps();
+
 
                 // check if bombs are removed this way = game finished
-                synchronized (bombs) {
+
+                synchronized (bombs){
                     for (Bomb b : bombs) {
                         if (b.currentY >= baseY) {
                             if (!immortal) resetGame();
                             toRemoveB.add(b);
-                            explosions.add(new Explosion(Explosion.EffectType.Endgame,b.currentX,b.currentY));
+                            explosions.add(new Explosion(Explosion.EffectType.Endgame, b.currentX, b.currentY));
                             break;
                         }
                     }
                 }
+
                 bombs.removeAll(toRemoveB);
 
                 // update for cannon and grass height for resizable window
@@ -153,7 +163,7 @@ public class GamePanel extends JPanel{
             @Override
             public void actionPerformed(ActionEvent e) {
                 synchronized (bombs) {
-                    Bomb b = new Bomb(r.nextInt(0,getWidth()-Bomb.WIDTH),r.nextInt(-200,0));
+                    Bomb b = new Bomb(r.nextInt(0, getWidth() - Bomb.WIDTH), r.nextInt(-200, 0));
                     bombs.add(b);
                     b.start();
                 }
@@ -162,25 +172,21 @@ public class GamePanel extends JPanel{
         deleteInvalidEntity = new Timer(1000, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                synchronized (projectiles) {
                     projectiles.removeIf(obj -> obj.currentY < 0);
-                }
-                synchronized (powerUps) {
+
                     powerUps.removeIf(obj -> obj.currentY > getHeight());
-                }
+
             }
         });
         spawnPowerUp = new Timer(4000 + 1000 * difficulty, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                synchronized (powerUps) {
-                    PowerUp p = new PowerUp(r.nextInt(0,getWidth()-PowerUp.WIDTH),r.nextInt(-200,0));
+                    PowerUp p = new PowerUp(r.nextInt(0, getWidth() - PowerUp.WIDTH), r.nextInt(-200, 0));
                     powerUps.add(p);
                     p.start();
-                }
             }
         });
-        
+
         pausePanel.resumeButton.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -190,16 +196,17 @@ public class GamePanel extends JPanel{
         add(pausePanel);
 
         // creation of the AI
-        bot = new Bot(this,bombs,c);
+        bot = new Bot(this, bombs, c);
 
         repaint();
     }
 
     public void moveLeft() {
-        c.currentX -= (c.currentX <= 0) ? 0 : getWidth()/c.MOVEMENT;
+        c.currentX -= (c.currentX <= 0) ? 0 : getWidth() / c.MOVEMENT;
     }
-    public void  moveRight() {
-        c.currentX += (c.currentX + Cannon.WIDTH >= getWidth()) ? 0 : getWidth()/c.MOVEMENT;
+
+    public void moveRight() {
+        c.currentX += (c.currentX + Cannon.WIDTH >= getWidth()) ? 0 : getWidth() / c.MOVEMENT;
     }
 
 
@@ -207,16 +214,16 @@ public class GamePanel extends JPanel{
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(100,255,255));
-        g2d.fillRect(0,0,getWidth(),getHeight());
+        g2d.setColor(new Color(0, 80, 200));
+        g2d.fillRect(0, 0, getWidth(), getHeight());
 
 
-        g2d.setColor(new Color(25,200,25));
-        g2d.fillRect(0,baseY,getWidth(),getHeight());
+        g2d.setColor(new Color(0, 100, 10));
+        g2d.fillRect(0, baseY, getWidth(), getHeight());
 
         if (immortal) {
             g2d.setColor(new Color(119, 119, 119));
-            g2d.fillRect(0,baseY,getWidth(),5);
+            g2d.fillRect(0, baseY, getWidth(), 5);
             int triangleCount = 15;
             int triWidth = 20;
             int triHeight = 20;
@@ -241,15 +248,15 @@ public class GamePanel extends JPanel{
         }
 
         // draw current points label
-        g2d.setColor(new Color(0,0,0));
-        g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,25));
-        g2d.drawString("Points: " + currentPoints,5,20);
+        g2d.setColor(new Color(0, 0, 0));
+        g2d.setFont(new Font(Font.MONOSPACED, Font.BOLD, 25));
+        g2d.drawString("Points: " + currentPoints, 5, 20);
 
 
         // drawing every spawned bomb
         synchronized (bombs) {
             for (Bomb b : bombs) {
-                 b.drawSprite(g2d);
+                b.drawSprite(g2d);
             }
         }
 
@@ -350,12 +357,12 @@ public class GamePanel extends JPanel{
     }
 
     private void initInput(InputMap inputMap, ActionMap actionMap) {
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0),"Left-Pressed");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0),"Right-Pressed");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0,true),"Left-Released");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0,true),"Right-Released");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,0),"Fire");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),"Pause");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "Left-Pressed");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "Right-Pressed");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0, true), "Left-Released");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0, true), "Right-Released");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "Fire");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "Pause");
 
         actionMap.put("Left-Pressed", leftPressAction);
         actionMap.put("Right-Pressed", rightPressAction);
@@ -397,6 +404,7 @@ public class GamePanel extends JPanel{
         paused = false;
         aiModeOn = false;
         bot.stopBot();
+        bot = new Bot(this, bombs, c);
         toggleInputEn(true);
         changeGameState(false);
     }
@@ -425,7 +433,7 @@ public class GamePanel extends JPanel{
         difficulty = diff;
         paused = false;
         this.powerUpEn = false;
-        spawnBomb.setDelay(1100-100 * difficulty);
+        spawnBomb.setDelay(1100 - 100 * difficulty);
         currentPoints = 0;
         bombs.clear();
         projectiles.clear();
@@ -443,40 +451,31 @@ public class GamePanel extends JPanel{
         spawnPowerUp.stop();
         refresh.stop();
         deleteInvalidEntity.stop();
-        synchronized (bombs) {
-            for (Bomb b : bombs) {
-                b.pauseBomb();
-            }
+        for (Bomb b : bombs) {
+            b.pauseBomb();
         }
-        synchronized (projectiles) {
-            for (Projectile p : projectiles) {
-                p.pauseProjectile();
-            }
+        for (Projectile p : projectiles) {
+            p.pauseProjectile();
         }
-        synchronized (powerUps) {
-            for (PowerUp p : powerUps) {
-                p.pausePowerUp();
-            }
+        for (PowerUp p : powerUps) {
+            p.pausePowerUp();
         }
+        if (aiModeOn) bot.pauseBot();
         pausePanel.setVisible(true);
     }
+
     public void resumeGame() {
         pausePanel.setVisible(false);
-        synchronized (bombs) {
-            for (Bomb b : bombs) {
-                b.resumeBomb();
-            }
+        for (Bomb b : bombs) {
+            b.resumeBomb();
         }
-        synchronized (projectiles) {
-            for (Projectile p : projectiles) {
-                p.resumeProjectile();
-            }
+        for (Projectile p : projectiles) {
+            p.resumeProjectile();
         }
-        synchronized (powerUps) {
-            for (PowerUp p : powerUps) {
-                p.resumePowerUp();
-            }
+        for (PowerUp p : powerUps) {
+            p.resumePowerUp();
         }
+        if (aiModeOn) bot.resumeBot();
         spawnBomb.start();
         if (powerUpEn) spawnPowerUp.start();
         refresh.start();
@@ -487,15 +486,13 @@ public class GamePanel extends JPanel{
         boolean oldState = gameRunning;
         gameRunning = newState;
 
-        firePropertyChange("gameRunning",oldState,gameRunning);
+        firePropertyChange("gameRunning", oldState, gameRunning);
     }
 
 
     public void spawnProjectile(Projectile p) {
-        synchronized (projectiles) {
-            projectiles.add(p);
-            p.start();
-        }
+        projectiles.add(p);
+        p.start();
     }
 
     public boolean isPaused() {
@@ -523,7 +520,7 @@ public class GamePanel extends JPanel{
                         fireDelay = DEF_FIRE_DELAY;
                         System.out.println("FireDelay Deactivated");
                     } else {
-                        if (fireDelay != DEF_FIRE_DELAY/2) {
+                        if (fireDelay != DEF_FIRE_DELAY / 2) {
                             fireDelay = DEF_FIRE_DELAY / 2;
                             System.out.println("FireDelay Active");
                         }
@@ -554,8 +551,8 @@ public class GamePanel extends JPanel{
                         c.MOVEMENT = Cannon.DEF_MOVEMENT;
                         System.out.println("Speed deactivated");
                     } else {
-                        if (c.MOVEMENT != (int)(Cannon.DEF_MOVEMENT * 0.75)) {
-                            c.MOVEMENT = (int)(Cannon.DEF_MOVEMENT * 0.75);
+                        if (c.MOVEMENT != (int) (Cannon.DEF_MOVEMENT * 0.66)) {
+                            c.MOVEMENT = (int) (Cannon.DEF_MOVEMENT * 0.66);
                             System.out.println("Speed Active");
                         }
                     }
@@ -577,7 +574,7 @@ public class GamePanel extends JPanel{
                         System.out.println("Immortal Deactivated");
                     } else {
                         immortal = true;
-                        System.out.println("Immortal Active");
+                        //System.out.println("Immortal Active");
                     }
                 }
                 case null, default -> {
@@ -614,7 +611,7 @@ public class GamePanel extends JPanel{
 
     }
 
-    public void fire() {
+    public boolean fire() {
         long now = System.currentTimeMillis();
         if (gameRunning && (now - lastFireTime >= fireDelay)) {
             lastFireTime = now;
@@ -634,6 +631,8 @@ public class GamePanel extends JPanel{
                 Projectile p = c.fire();
                 spawnProjectile(p);
             }
+            return true;
         }
+        return false;
     }
 }

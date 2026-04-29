@@ -3,19 +3,19 @@ import java.awt.*;
 
 public class PausePanel extends JPanel {
 
-    JButton resumeButton;
-    JButton lobbyButton;
-    JButton newGameButton;
+    Button resumeButton;
+    Button lobbyButton;
+    Button newGameButton;
 
     public PausePanel() {
         super();
         setBackground(new Color(0,0,0,0));
         setLayout(new BorderLayout());
-        resumeButton = new JButton("Resume Game");
+        resumeButton = new Button("Resume Game");
         resumeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lobbyButton = new JButton("Lobby");
+        lobbyButton = new Button("Lobby");
         lobbyButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        newGameButton = new JButton("New Game");
+        newGameButton = new Button("New Game");
         newGameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JPanel middlePanel = new JPanel();

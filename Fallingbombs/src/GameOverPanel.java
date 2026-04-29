@@ -3,43 +3,73 @@ import java.awt.*;
 
 public class GameOverPanel extends JPanel {
 
-    JButton backToLobbyButton;
-    JButton newGameButton;
+    Button backToLobbyButton;
+    Button newGameButton;
     JLabel gameOverLabel;
     JLabel scoreLabel;
-    JPanel buttonPanel;
 
-    public GameOverPanel(int w,int h) {
-        super();
-        setSize(w,h);
+    public GameOverPanel(int w, int h) {
+        setPreferredSize(new Dimension(w, h));
         setLayout(new BorderLayout());
 
-        gameOverLabel = new JLabel("Game Over");
-        gameOverLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,50));
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        titlePanel.add(gameOverLabel);
+        gameOverLabel = new JLabel("<html>Game<br>Over</html>", SwingConstants.CENTER);
+        gameOverLabel.setForeground(Color.WHITE);
+        gameOverLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 80));
 
-        scoreLabel = new JLabel("Score: EXAMPLE");
-        scoreLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,32));
-        JPanel middlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        middlePanel.add(scoreLabel);
+        scoreLabel = new JLabel("Score: EXAMPLE", SwingConstants.CENTER);
+        scoreLabel.setForeground(Color.WHITE);
+        scoreLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 40));
 
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        JPanel centerPanel = new JPanel();
+        centerPanel.setOpaque(false);
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 
-        backToLobbyButton = new JButton("Lobby");
-        newGameButton = new JButton("New Game");
+        gameOverLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        scoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        centerPanel.add(Box.createVerticalGlue());
+        centerPanel.add(gameOverLabel);
+        centerPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        centerPanel.add(scoreLabel);
+        centerPanel.add(Box.createVerticalGlue());
+
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(-80, 0, 0, 0));
+
+        newGameButton = new Button("New Game");
+        backToLobbyButton = new Button("Lobby");
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        buttonPanel.setOpaque(false);
+
         buttonPanel.add(newGameButton);
         buttonPanel.add(backToLobbyButton);
 
-        add(titlePanel,BorderLayout.NORTH);
-        add(middlePanel,BorderLayout.CENTER);
-        add(buttonPanel,BorderLayout.SOUTH);
+        add(centerPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
-
 
     public void setScoreLabel(int score) {
-        this.scoreLabel.setText("Score: " + score);
+        scoreLabel.setText("Score: " + score);
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        int w = getWidth();
+        int h = getHeight();
+
+        // background
+        g.setColor(new Color(15, 15, 30));
+        g.fillRect(0, 0, w, h);
+
+        // simple grid
+        g.setColor(new Color(255, 255, 255, 15));
+
+        for (int x = 0; x < w; x += 50)
+            g.drawLine(x, 0, x, h);
+
+        for (int y = 0; y < h; y += 50)
+            g.drawLine(0, y, w, y);
+    }
 }
