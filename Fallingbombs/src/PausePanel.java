@@ -31,6 +31,7 @@ public class PausePanel extends JPanel {
 
         JPanel northPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel pausedLabel = new JLabel("Paused");
+        pausedLabel.setFont(new Font(Font.MONOSPACED,Font.BOLD,18));
         northPanel.add(Box.createRigidArea(new Dimension(0,30)));
         northPanel.add(pausedLabel);
 

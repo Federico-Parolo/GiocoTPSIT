@@ -33,7 +33,26 @@ public class Bomb extends Thread implements Drawable{
 
 
     public void drawSprite(Graphics2D g2d) {
-        g2d.fillOval(currentX,currentY, WIDTH, HEIGHT);
+        //g2d.fillOval(currentX,currentY, WIDTH, HEIGHT);
+
+
+        // Main meteorite body (gray)
+        g2d.setColor(new Color(160, 160, 160));
+        g2d.fillOval(currentX + 2, currentY + 2, WIDTH - 4, HEIGHT - 4);
+
+        // Slight shading (darker edge)
+        g2d.setColor(new Color(120, 120, 120));
+        g2d.drawOval(currentX + 2, currentY + 2, WIDTH - 4, HEIGHT - 4);
+
+        // Craters (darker holes)
+        g2d.setColor(new Color(90, 90, 90));
+        g2d.fillOval(currentX + 5, currentY + 5, 3, 3);
+        g2d.fillOval(currentX + 10, currentY + 6, 2, 2);
+        g2d.fillOval(currentX + 7, currentY + 11, 3, 2);
+
+        // Small highlights for depth
+        g2d.setColor(new Color(200, 200, 200));
+        g2d.fillOval(currentX + 6, currentY + 4, 2, 2);
     }
 
     synchronized void  move() {

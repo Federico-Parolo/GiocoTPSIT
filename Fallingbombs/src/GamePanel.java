@@ -214,12 +214,18 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(0, 0, 100));
+        g2d.setColor(new Color(0, 0, 80));
         g2d.fillRect(0, 0, getWidth(), getHeight());
-
 
         g2d.setColor(new Color(0, 100, 10));
         g2d.fillRect(0, baseY, getWidth(), getHeight());
+
+        g2d.setColor(Color.WHITE);
+        for (int i = 0; i < 10; i++) {
+            int x = (int) (Math.random() * WIDTH);
+            int y = (int) (Math.random() * HEIGHT);
+            g2d.drawString("*", x, y);
+        }
 
         if (immortal) {
             g2d.setColor(new Color(119, 119, 119));
