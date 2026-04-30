@@ -5,8 +5,8 @@ public class Bomb extends Thread implements Drawable{
     volatile int currentX,currentY;
     public volatile int speed;
     public final int DEF_SPEED;
-    static final int WIDTH = 15;
-    static final int HEIGHT = 15;
+    static final int WIDTH = 18;
+    static final int HEIGHT = 18;
     private volatile boolean running = true;
     private volatile boolean paused = false;
 

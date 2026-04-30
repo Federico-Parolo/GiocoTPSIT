@@ -121,7 +121,7 @@ public class LobbyPanel extends JPanel {
                 System.exit(0);
             }
         });
-        autoPlayButton = new Button("AI Mode");
+        autoPlayButton = new Button("Auto Play");
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(30,0,10,0));

@@ -214,7 +214,7 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(0, 80, 200));
+        g2d.setColor(new Color(0, 0, 100));
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
 
