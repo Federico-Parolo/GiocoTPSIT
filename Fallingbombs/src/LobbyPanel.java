@@ -194,9 +194,6 @@ public class LobbyPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY);
-
         int w = getWidth();
         int h = getHeight();
 
@@ -233,8 +230,6 @@ public class LobbyPanel extends JPanel {
             @Override
             public void paintIcon(Component c, Graphics g, int x, int y) {
                 Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
 
                 // background
                 g2d.setColor(new Color(40, 40, 80));
