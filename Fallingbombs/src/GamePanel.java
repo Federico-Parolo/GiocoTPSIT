@@ -222,7 +222,6 @@ public class GamePanel extends JPanel {
 
         // draw deadline for bombs
         g2d.setColor(Color.WHITE);
-        float phase = (System.currentTimeMillis() % 1000000000) / 10f;
         float[] dash = {10f, 10f}; // 10px line, 10px gap
         g2d.setStroke(new BasicStroke(
                 2f,                      // thickness
@@ -230,13 +229,14 @@ public class GamePanel extends JPanel {
                 BasicStroke.JOIN_MITER,
                 10f,
                 dash,
-                phase
+                0
         ));
         g2d.drawLine(0,baseY,getWidth(),baseY);
         g2d.setStroke(new BasicStroke());
 
         g2d.setColor(Color.WHITE);
-        for (int i = 0; i < 10; i++) {
+        g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,20));
+        for (int i = 0; i < 1000; i++) {
             int x = (int) (Math.random() * WIDTH);
             int y = (int) (Math.random() * HEIGHT);
             g2d.drawString("*", x, y);
