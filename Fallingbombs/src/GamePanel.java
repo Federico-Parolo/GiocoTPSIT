@@ -217,8 +217,23 @@ public class GamePanel extends JPanel {
         g2d.setColor(new Color(0, 0, 80));
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        g2d.setColor(new Color(0, 100, 10));
+        g2d.setColor(new Color(0, 0,80)); // 0, 100, 10
         g2d.fillRect(0, baseY, getWidth(), getHeight());
+
+        // draw deadline for bombs
+        g2d.setColor(Color.WHITE);
+        float phase = (System.currentTimeMillis() % 1000000000) / 10f;
+        float[] dash = {10f, 10f}; // 10px line, 10px gap
+        g2d.setStroke(new BasicStroke(
+                2f,                      // thickness
+                BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER,
+                10f,
+                dash,
+                phase
+        ));
+        g2d.drawLine(0,baseY,getWidth(),baseY);
+        g2d.setStroke(new BasicStroke());
 
         g2d.setColor(Color.WHITE);
         for (int i = 0; i < 10; i++) {
@@ -254,7 +269,7 @@ public class GamePanel extends JPanel {
         }
 
         // draw current points label
-        g2d.setColor(new Color(0, 0, 0));
+        g2d.setColor(new Color(255,255,255));
         g2d.setFont(new Font(Font.MONOSPACED, Font.BOLD, 25));
         g2d.drawString("Points: " + currentPoints, 5, 20);
 

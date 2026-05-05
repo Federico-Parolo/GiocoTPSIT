@@ -31,7 +31,7 @@ public class PowerUp extends Thread implements Drawable{
     public PowerUp(int x,int y) {
         currentX = x;
         currentY = y;
-        speed = 10;
+        speed = (int)(Math.random() * 4) + 6;
         type = types[r.nextInt(types.length)];
 
         lifespan = type.duration;

@@ -13,7 +13,7 @@ public class Bomb extends Thread implements Drawable{
     public Bomb(int x,int y) {
         currentX = x;
         currentY = y;
-        speed = (int)(Math.random() * 5) + 1;
+        speed = (int)(Math.random() * 10) + 1;
         DEF_SPEED = speed;
     }
 
