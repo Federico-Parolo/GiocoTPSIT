@@ -9,12 +9,14 @@ public class LobbyPanel extends JPanel {
     Button startButton;
     Button exitButton;
     Button autoPlayButton;
+    Button rankingButton;
     JLabel highScoreLabel;
     String highScoreTxt = "High Score: ";
     JLabel currentDiffLabel;
     String diffTxt = "Selected: ";
     JLabel difficultyDetails;
     JCheckBox powerUpEn;
+    JTextField nameField;
     int currentHighScore = 0;
     private int diff;
     private final int EASY = 1;
@@ -98,29 +100,35 @@ public class LobbyPanel extends JPanel {
         powerUpEn.setIcon(createIcon(false));
         powerUpEn.setSelectedIcon(createIcon(true));
 
+        rankingButton = new Button("Ranking");
+        rankingButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        nameField = new JTextField();
+        nameField.setMaximumSize(new Dimension(200,50));
+        nameField.setFont(new Font(Font.MONOSPACED, Font.PLAIN,20));
+        nameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+
         JPanel middlePanel = new JPanel();
         middlePanel.setOpaque(false);
         middlePanel.setLayout(new BoxLayout(middlePanel,BoxLayout.Y_AXIS));
         middlePanel.setBorder(BorderFactory.createEmptyBorder(30,0,30,0));
         middlePanel.add(highScoreLabel);
         middlePanel.add(diffPanel);
-        middlePanel.add(Box.createRigidArea(new Dimension(0,30)));
+        middlePanel.add(Box.createRigidArea(new Dimension(0,20)));
         middlePanel.add(currentDiffLabel);
-        middlePanel.add(Box.createRigidArea(new Dimension(0,30)));
+        middlePanel.add(Box.createRigidArea(new Dimension(0,20)));
         middlePanel.add(difficultyDetails);
-        middlePanel.add(Box.createRigidArea(new Dimension(0,30)));
+        middlePanel.add(Box.createRigidArea(new Dimension(0,20)));
         middlePanel.add(powerUpEn);
+        middlePanel.add(Box.createRigidArea(new Dimension(0,20)));
+        middlePanel.add(rankingButton);
+        middlePanel.add(Box.createRigidArea(new Dimension(0,20)));
+        middlePanel.add(nameField);
 
         startButton = new Button("Start Game");
         startButton.setSize(100,100);
         exitButton = new Button("Exit");
-        exitButton.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Closing game...");
-                System.exit(0);
-            }
-        });
         autoPlayButton = new Button("Auto Play");
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setOpaque(false);
@@ -134,6 +142,10 @@ public class LobbyPanel extends JPanel {
         add(buttonPanel,BorderLayout.SOUTH);
 
         selectDifficulty(EASY);
+    }
+
+    public String getPlayerName() {
+        return nameField.getText();
     }
 
     public void selectDifficulty(int d) {
