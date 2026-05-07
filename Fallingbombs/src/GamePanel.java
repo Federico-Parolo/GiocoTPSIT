@@ -12,8 +12,11 @@ public class GamePanel extends JPanel {
     int currentPoints = 0;
     int bombPoints = 10;
     private long lastFireTime;
+    private long lastStarUpdate;
     private long fireDelay = 300;
     static final int DEF_FIRE_DELAY = 300;
+    static final int STAR_UPDATE_DELAY = 1000;
+    private final Point[] stars = new Point[10];
     private boolean leftPressed = false, rightPressed = false;
     Cannon c;
     PausePanel pausePanel;
@@ -234,12 +237,17 @@ public class GamePanel extends JPanel {
         g2d.drawLine(0,baseY,getWidth(),baseY);
         g2d.setStroke(new BasicStroke());
 
+        if (lastStarUpdate + STAR_UPDATE_DELAY < System.currentTimeMillis()) {
+            lastStarUpdate = System.currentTimeMillis();
+            for (int i = 0; i < stars.length; i++) {
+                stars[i] = new Point((int)(Math.random() * getWidth()), Math.min((int)(Math.random() * getHeight()), baseY));
+            }
+        }
+
         g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,20));
-        for (int i = 0; i < 1000; i++) {
-            int x = (int) (Math.random() * WIDTH);
-            int y = (int) (Math.random() * HEIGHT);
-            g2d.drawString("*", x, y);
+        g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,10));
+        for (int i = 0; i < stars.length; i++) {
+            g2d.drawString("*", stars[i].x,stars[i].y);
         }
 
         if (immortal) {

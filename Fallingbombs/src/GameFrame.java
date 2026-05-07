@@ -56,7 +56,7 @@ public class GameFrame extends JFrame {
                     gameOverPanel.setScoreLabel(gamePanel.currentPoints);
                     if (lobbyPanel.currentHighScore < gamePanel.currentPoints) lobbyPanel.currentHighScore = gamePanel.currentPoints;
                     int points = gamePanel.currentPoints;
-                    leaderboard.updateLeaderboard(lobbyPanel.getPlayerName().isEmpty() ?
+                    leaderboard.updateLeaderboard(lobbyPanel.getPlayerName().isEmpty() || lobbyPanel.getPlayerName().length() > 10 ?
                             "Player" : lobbyPanel.getPlayerName(), "" + points);
                     lobbyPanel.updateUI();
                     cardLayout.show(container, END);

@@ -100,7 +100,7 @@ public class Leaderboard extends JPanel {
 
         // text content
         String s = "Name    Points";
-        g2d.drawString(s,getWidth()/2 - fm.stringWidth(s)/2,30);
+        g2d.drawString(s,getWidth()/2 - fm.stringWidth(s)/2,startY);
 
 
         g2d.setFont(new Font(Font.MONOSPACED,Font.BOLD,40));
@@ -109,7 +109,7 @@ public class Leaderboard extends JPanel {
             if (leaderboard[i][0] == null || leaderboard[i][1] == null) break;
             String line = leaderboard[i][0] + "    " + leaderboard[i][1];
             int textHeight = fm.getAscent();
-            g2d.drawString(line, startX, startY + textHeight * i + 10);
+            g2d.drawString(line, startX, startY + textHeight * i + 80);
         }
     }
 
